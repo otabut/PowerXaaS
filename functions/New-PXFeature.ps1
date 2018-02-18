@@ -1,7 +1,8 @@
-Function Enable-PXFeature
+Function New-PXFeature
 {
   param (
-    [Parameter(Mandatory=$true)]$Name
+    [Parameter(Mandatory=$true)]$Name,
+    [Parameter(Mandatory=$false)][ValidateSet("yes","no")]$State='no'
   )
 
   $ErrorActionPreference = "stop"
@@ -11,12 +12,17 @@ Function Enable-PXFeature
     $Config = Get-Content "$ModulePath\PowerXaaS.conf" | ConvertFrom-Json
     If ($Config.features | where {$_.Name -eq $Name})
     {
-      ($Config.features | where {$_.name -eq $Name}).active = 'yes'
-      $Config | ConvertTo-Json -Depth 5 | Set-Content $ModulePath\PowerXaaS.conf
+      Write-Warning "Feature $Name already exists"
     }
     else
     {
-      Write-Warning "Feature $Name doesn't exist"
+      $Feature = [PSCustomObject]@{
+        name = $Name
+        active = $State
+        endpoints = @()
+      }
+      $Config.features += $Feature
+      $Config | ConvertTo-Json -Depth 5 | Set-Content $ModulePath\PowerXaaS.conf
     }
   }
   catch

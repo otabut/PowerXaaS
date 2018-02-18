@@ -1,4 +1,4 @@
-Function Enable-PXFeature
+Function Disable-PXFeature
 {
   param (
     [Parameter(Mandatory=$true)]$Name
@@ -11,7 +11,7 @@ Function Enable-PXFeature
     $Config = Get-Content "$ModulePath\PowerXaaS.conf" | ConvertFrom-Json
     If ($Config.features | where {$_.Name -eq $Name})
     {
-      ($Config.features | where {$_.name -eq $Name}).active = 'yes'
+      ($Config.features | where {$_.name -eq $Name}).active = 'no'
       $Config | ConvertTo-Json -Depth 5 | Set-Content $ModulePath\PowerXaaS.conf
     }
     else
