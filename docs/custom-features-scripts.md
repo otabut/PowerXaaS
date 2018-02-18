@@ -23,10 +23,7 @@ Inside the Inputs object, you will find :
 
 Custom features scripts must return the following Powershell Custom Object :
 
-  PSCustomObject]@{
-      ReturnCode = `3-digits`  #Standard HTTP return code
-      Content = `json string`
-  }
+PSCustomObject]@{ReturnCode=`3-digits standard HTTP return code`;Content=`json string`}
 
 
 ### Examples
