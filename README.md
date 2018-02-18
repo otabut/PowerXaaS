@@ -1,7 +1,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/powerxaas/badge/?version=latest)](http://powerxaas.readthedocs.io/en/latest/?badge=latest)
 
-# PowerXaaS (build in progress)
+# PowerXaaS
 Powershell module for exposing features "as a Service" through a HTTP server
 
 ## Description
