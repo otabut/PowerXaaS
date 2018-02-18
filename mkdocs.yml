@@ -6,6 +6,7 @@ repo_url: https://github.com/otabut/PowerXaaS
 
 
 pages:
+  - Home: index.md
   - Setup: setup.md
   - Features and Endpoints: features-and-endpoints.md
   - Custom features scripts: custom-features-scripts.md
