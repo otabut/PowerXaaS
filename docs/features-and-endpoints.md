@@ -10,7 +10,7 @@ Let's say, features are a logical group of endpoints and you can have as many fe
 
 An endpoint is a specific action requested by a client through a combination of a HTTP mehtod (GET, POST, PUT, DELETE, ...) and an URL path.
 
-Examples :  GET /version or POST /echo
+Examples :  `GET /version` or `POST /echo`
 
 
 ### Configuration file
