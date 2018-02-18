@@ -2,9 +2,8 @@ site_name: PowerXaaS
 site_url: https://github.com/otabut/PowerXaaS
 site_description: Powershell module for exposing features "as a Service" through a HTTP server
 site_author: otabut
-
 repo_url: https://github.com/otabut/PowerXaaS
-edit_uri: ""
+
 
 pages:
   - Setup: setup.md
