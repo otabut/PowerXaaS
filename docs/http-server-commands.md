@@ -1,7 +1,9 @@
 
 ### Start
 
-Just start PowerXaaS.ps1 with IP address and port number. For logging purpose, you can choose between console output, log file or custom logging function (write code in Start-PXCustomLogging.ps1)
+Just start PowerXaaS.ps1 with IP address and port number as parameters.
+
+For logging purpose, you can choose between console output, log file or custom logging function (write your own code in Start-PXCustomLogging.ps1)
 
 
 ### Pause
