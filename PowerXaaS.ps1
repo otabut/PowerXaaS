@@ -1,1 +1,198 @@
+param (
+  [Parameter(Mandatory=$true)]$Port,
+  [Parameter(Mandatory=$false)]$Ip="localhost",
+  [Parameter(Mandatory=$false)]$LogFile,
+  [Parameter(Mandatory=$false)][Switch]$Console,
+  [Parameter(Mandatory=$false)][Switch]$CustomLogging
+)
+
+$ErrorActionPreference = 'stop'
+try
+{
+  If (!(Get-module PowerXaaS))
+  {
+    Import-Module PowerXaaS
+  }
+
+  #Redefine scope of parameters used by logging functio
+  $Global:LogFile = $LogFile
+  $Global:Console = $Console
+  $Global:CustomLogging = $CustomLogging
+
+  ### START WEB SERVER ###
+  $Listener = New-Object System.Net.HttpListener
+  $Bindings = "http://$ip`:$port/"
+  $Listener.Prefixes.Add($Bindings)
+  $Listener.Start()
+  Write-PXLog -Status "Information" -Context "SERVER" -Description "server started listening on $bindings"
+
+  while ($Listener.IsListening)
+  {
+    ### LISTEN ###
+    $Context = $null
+    $Task = $Listener.GetContextAsync()
+    do
+    {
+      if ($Task.Wait(100))
+      {
+        $Context = $Task.Result
+      }
+      if (!($Context))
+      {
+        ### EXIT CONDITION ###
+        if (Test-Path .\stop)
+        {
+          Write-PXLog -Status "Warning" -Context "SERVER" -Description "server will terminate"
+          Remove-Item .\stop
+          break outer
+        }
+        ### PAUSE CONDITION ###
+        if (Test-Path .\pause.*)
+        {
+          $Delay = (get-item .\pause.*).Extension.substring(1)
+          Write-PXLog -Status "Warning" -Context "SERVER" -Description "server is paused for $delay seconds"
+          Start-Sleep -Seconds $Delay
+          Remove-Item .\pause.*
+          Write-PXLog -Status "Warning" -Context "SERVER" -Description "server resumes"
+        }
+      }
+    }
+    while (-not $context)
+
+    ### INITIALIZE ###
+    $Request = $Context.Request
+    $Response = $Context.Response
+    $StreamData = $null
+    $Body = $null
+    $Malformed = $false
+
+    ### PROCESS REQUEST ###
+    Write-PXLog -Status "Information" -Context "SERVER" -Description "****** REQUEST RECEIVED ******"
+    Write-PXLog -Status "Information" -Context "CLIENT" -Description "local path is $($Request.Url.LocalPath)"
+    Write-PXLog -Status "Information" -Context "CLIENT" -Description "HTTP method is $($Request.HttpMethod)"
+    Write-PXLog -Status "Information" -Context "CLIENT" -Description "content type is $($Request.ContentType)"
+    Write-PXLog -Status "Information" -Context "CLIENT" -Description "host name is $($Request.UserHostName)"
+    Write-PXLog -Status "Information" -Context "CLIENT" -Description "user agent is $($Request.UserAgent)"
+    
+
+    #Read body
+    $StreamReader = New-Object System.IO.StreamReader $request.InputStream
+    $StreamData = $StreamReader.ReadToEnd()
+    if ($StreamData)
+    {
+      try
+      {
+        $Body = $StreamData | ConvertFrom-Json
+        Write-PXLog -Status "Information" -Context "SERVER" -Description "body is $body"
+      }
+      catch
+      {
+        #Prevent from malformed JSON files
+        Write-PXLog -Status "Error" -Context "SERVER" -Description "$StreamData is not a valid JSON file"
+        $Malformed = $true
+      }
+    }
+    if ($Malformed)
+    {
+      $Result = [PSCustomObject]@{
+        ReturnCode = 400
+        Content = "Provided body is not a valid JSON file"
+      }
+    }
+    else
+    {
+      #Read config and get action
+      Write-PXLog -Status "Information" -Context "SERVER" -Description "------ processing request ------"
+      Write-PXLog -Status "Information" -Context "SERVER" -Description "reading configuration file"
+      $Config = Get-Content .\PowerXaaS.conf | ConvertFrom-Json
+      $Endpoints = $Config.features | select -ExpandProperty endpoints -Property @{Label="feature";Expression={$_.Name}}, active | where {$_.Active -eq 'yes'}
+      $Feature = ($Endpoints | where {($_.Method -eq $Request.httpmethod) -and (($Request.url.localpath.substring(1) -replace 'api/v.','') -match ("^$($_.url)$".replace("{","(?<").replace("}", ">.*)")).substring(1))} | Select-Object -First 1).feature
+      $Parameters = ([PSCustomObject]$Matches)
+      
+      if ($Feature)
+      {
+        Write-PXLog -Status "Information" -Context "SERVER" -Description "matching feature: $feature"
+        #Check authorization
+        if (Request-PXAuthorization)
+        {
+          Write-PXLog -Status "Information" -Context "SERVER" -Description "authorization granted"
+          $Folder = ".\$($Request.Url.Segments[1].substring(0,$Request.Url.Segments[1].length-1))\$($Request.Url.Segments[2].substring(0,$Request.Url.Segments[2].length-1))"
+          $Script = "$Folder\$Feature.ps1"
+          $Parameters.PSObject.Properties.Remove('0')
+          $Inputs = [PSCustomObject]@{
+            URL = $($Request.url.localpath.substring(1) -replace 'api/v.','')
+            Method = $($Request.httpmethod)
+            Body = $Body
+            Parameters = $Parameters
+          }
+
+          #Run action
+          Write-PXLog -Status "Information" -Context "SERVER" -Description "calling - $Script"
+          try
+          {
+            $Result = & "$Script" $Inputs
+          }
+          catch
+          {
+            Write-PXLog -Status "Error" -Context "FEATURE" -Description "internal error"
+            $Result = [PSCustomObject]@{
+              ReturnCode = 500
+              Content = "error while processing $Script"
+            }
+          }
+        }
+        else
+        {
+          Write-PXLog -Status "Error" -Context "SERVER" -Description "authorization denied"
+          $Result = [PSCustomObject]@{
+            ReturnCode = 403
+            Content = 'authorization denied'
+          }
+        }
+      }
+      else
+      {
+        #Endpoint not found
+        Write-PXLog -Status "Error" -Context "SERVER" -Description "endpoint not found"
+        $Result = [PSCustomObject]@{
+          ReturnCode = 404
+          Content = "endpoint not found"
+        }
+      }
+    }
+        
+    if ($Result.ReturnCode -notmatch "\d\d\d")
+    {
+      Write-PXLog -Status "Error" -Context "FEATURE" -Description "invalid return code"
+      $Result = [PSCustomObject]@{
+        ReturnCode = 500
+        Content = "invalid return code"
+      }
+    }
+    Write-PXLog -Status "Information" -Context "SERVER" -Description "------  request processed  ------"
+
+    ### SEND RESPONSE ###    
+    Write-PXLog -Status "Information" -Context "SERVER" -Description "return code is $($Result.ReturnCode)"
+    $Response.statuscode = $Result.ReturnCode
+    if ($Result.Content)
+    {
+      Write-PXLog -Status "Information" -Context "SERVER" -Description "content is $($Result.Content)"
+      $Buffer = [Text.Encoding]::UTF8.GetBytes($Result.Content)
+      $Response.ContentType = 'application/json'
+      $Response.ContentLength64 = $Buffer.length
+      $Response.OutputStream.Write($Buffer, 0, $Buffer.length)
+    }
+    else
+    {
+      Write-PXLog -Status "Information" -Context "SERVER" -Description "no content"
+    }
+    $Response.Close()
+    Write-PXLog -Status "Information" -Context "SERVER" -Description "******  RESPONSE SENT  ******"
+  }
+}
+finally
+{
+  $Listener.Stop()
+  Write-PXLog -Status "Warning" -Context "SERVER" -Description "server stopped"
+}
 
