@@ -6,7 +6,7 @@ Powershell module for exposing features "as a Service" through a HTTP server
 
 ## Description
 
-PowerXaas uses .NET HTTP listener (http.sys) to serve user-defined features as standard WebService. 
+PowerXaas uses .NET HTTP listener (http.sys) to serve user-defined features as standard REST API web service. 
 
 PowerXaaS will allow you to :
   - create features
