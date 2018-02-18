@@ -1,3 +1,6 @@
+
+[![Documentation Status](https://readthedocs.org/projects/powerxaas/badge/?version=latest)](http://powerxaas.readthedocs.io/en/latest/?badge=latest)
+
 # PowerXaaS
 Powershell module for exposing features "as a Service" through a HTTP server
 
@@ -17,10 +20,7 @@ PowerXaaS will allow you to :
 ## More information
 
 ### [Setup](https://github.com/otabut/PowerXaaS/blob/master/docs/setup.md)
-
 ### [Features and Endpoints](https://github.com/otabut/PowerXaaS/blob/master/docs/features-and-endpoints.md)
-
 ### [Custom features scripts](https://github.com/otabut/PowerXaaS/blob/master/docs/custom-features-scripts.md)
-
 ### [HTTP server commands](https://github.com/otabut/PowerXaaS/blob/master/docs/http-server-commands.md)
 
