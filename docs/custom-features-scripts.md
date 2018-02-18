@@ -31,4 +31,4 @@ Custom features scripts must return the following Powershell Custom Object :
 
 ### Examples
 
-You will find an example of a custom feaure script with the feature called `demo-feature`.
+You will find an example of a custom feature script with the feature called `demo-feature`.
