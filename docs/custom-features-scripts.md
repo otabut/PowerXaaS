@@ -19,6 +19,16 @@ Inside the Inputs object, you will find :
 - the parameters (if any) passed in the URL. Example: value of the `op` parameter for the endpoint /addition/`{op}`
 
 
+### The returned object
+
+Custom features scripts must return the following Powershell Custom Object :
+
+  PSCustomObject]@{
+      ReturnCode = `3-digits`  #Standard HTTP return code
+      Content = `json string`
+  }
+
+
 ### Examples
 
 You will find an example of a custom feaure script with the feature called `demo-feature`.
