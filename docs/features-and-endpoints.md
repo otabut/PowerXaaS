@@ -15,7 +15,7 @@ Examples :  `GET /version` or `POST /echo`
 
 ### Configuration file
 
-With PowerXaaS, the schema that will describe endpoints is stored in a configuration file : PowerXaaS.conf. The format of the file is JSON. 
+With PowerXaaS, the web schema that describe features and endpoints is stored in a configuration file : PowerXaaS.conf. The format of the file is JSON. 
 
 You should not edit the configuration file directly : the Powershell module contains cmdlets to perform all the actions you mau need.
 
