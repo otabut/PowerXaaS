@@ -28,7 +28,7 @@ try
   {
     "/connect"
     {
-      if ($inputs.body.password -eq 'toto')
+      if (($inputs.body.username -eq 'JohnDoe') -and ($inputs.body.password -eq 'blabla'))  #Credentials validation
       {
         $ExpirationDate = (Get-Date).AddHours(4)
         $JSONheader = '{"alg":"HS256","typ":"JWT"}'
