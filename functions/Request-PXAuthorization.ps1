@@ -2,13 +2,15 @@ Function Request-PXAuthorization
 {
   param (
     [Parameter(Mandatory=$true)]$Authorization
+    #maybe also add feature or endpoint as parameter
   )
 
   if ($Authorization.split(' ')[0] -eq "Bearer")
   {
     $Claims = (Decode-JWT $Authorization.split(' ')[1]).Claims
-    if (($Claims.username -eq "otabut") -and ([datetime]$Claims."expiration-date" -gt (Get-Date)))
+    if ([datetime]$Claims."expiration-date" -gt (Get-Date))
     {
+      #do something with $Claims.username
       return $true
     }
     else
