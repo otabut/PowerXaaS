@@ -10,5 +10,5 @@ pages:
   - Setup: setup.md
   - Features and Endpoints: features-and-endpoints.md
   - Custom features scripts: custom-features-scripts.md
-  - Authentication with JSON web tokens: json-web-tockens.md
+  - Authentication with JSON web tokens: json-web-tokens.md
   - HTTP server commands: http-server-commands.md
