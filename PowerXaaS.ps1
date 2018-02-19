@@ -64,16 +64,19 @@ try
     $Response = $Context.Response
     $StreamData = $null
     $Body = $null
+    $Authorized = $false
     $Malformed = $false
 
     ### PROCESS REQUEST ###
     Write-PXLog -Status "Information" -Context "SERVER" -Description "****** REQUEST RECEIVED ******"
     Write-PXLog -Status "Information" -Context "CLIENT" -Description "local path is $($Request.Url.LocalPath)"
     Write-PXLog -Status "Information" -Context "CLIENT" -Description "HTTP method is $($Request.HttpMethod)"
-    Write-PXLog -Status "Information" -Context "CLIENT" -Description "content type is $($Request.ContentType)"
     Write-PXLog -Status "Information" -Context "CLIENT" -Description "host name is $($Request.UserHostName)"
     Write-PXLog -Status "Information" -Context "CLIENT" -Description "user agent is $($Request.UserAgent)"
-    
+    foreach ($key in $Request.headers.AllKeys)
+    {
+      Write-PXLog -Status "Information" -Context "CLIENT" -Description "$key`: $($Request.headers.GetValues($key))"
+    }
 
     #Read body
     $StreamReader = New-Object System.IO.StreamReader $request.InputStream
@@ -83,7 +86,7 @@ try
       try
       {
         $Body = $StreamData | ConvertFrom-Json
-        Write-PXLog -Status "Information" -Context "SERVER" -Description "body is $body"
+        Write-PXLog -Status "Information" -Context "SERVER" -Description "body is $($body -replace '(?<begin>[\;\{\s]password=)(?<pass>.*)(?<end>[\;\}])','${begin}********${end}')"
       }
       catch
       {
@@ -113,7 +116,23 @@ try
       {
         Write-PXLog -Status "Information" -Context "SERVER" -Description "matching feature: $feature"
         #Check authorization
-        if (Request-PXAuthorization)
+        if ($Request.headers.GetValues("Authorization") -eq $null)
+        {
+          if (($Request.url.localpath.substring(1) -replace 'api/v.','') -eq '/connect')
+          {
+            $Authorized = $true
+          }
+          else
+          {
+            $Authorized = $false
+          }
+        }
+        else
+        {
+          $Authorized = Request-PXAuthorization -Authorization $Request.headers.GetValues("Authorization")
+        }
+
+        if ($Authorized)
         {
           Write-PXLog -Status "Information" -Context "SERVER" -Description "authorization granted"
           $Folder = ".\$($Request.Url.Segments[1].substring(0,$Request.Url.Segments[1].length-1))\$($Request.Url.Segments[2].substring(0,$Request.Url.Segments[2].length-1))"
@@ -194,5 +213,5 @@ finally
 {
   $Listener.Stop()
   Write-PXLog -Status "Warning" -Context "SERVER" -Description "server stopped"
+  Remove-Module PowerXaaS
 }
-
