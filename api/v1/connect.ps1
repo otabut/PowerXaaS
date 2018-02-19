@@ -2,6 +2,8 @@ param (
   [Parameter(Mandatory=$true)]$inputs
 )
 
+$CredentialsList = @{"JohnDoe"="blabla";"WalterWhite"="CrystalMeth";"DexterMorgan"="SliceOfLife"}
+
 function MAA-ConvertTo-Base64([string]$data)
 {
     $temp = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($data))
@@ -28,7 +30,7 @@ try
   {
     "/connect"
     {
-      if (($inputs.body.username -eq 'JohnDoe') -and ($inputs.body.password -eq 'blabla'))  #Credentials validation
+      if ($CredentialsList.$($inputs.body.username) -eq $inputs.body.password)  #Credentials validation
       {
         $ExpirationDate = (Get-Date).AddHours(4)
         $JSONheader = '{"alg":"HS256","typ":"JWT"}'
