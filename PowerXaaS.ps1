@@ -21,7 +21,7 @@ try
 
   ### START WEB SERVER ###
   $Listener = New-Object System.Net.HttpListener
-  $Bindings = "http://$ip`:$port/"
+  $Bindings = "https://$ip`:$port/"
   $Listener.Prefixes.Add($Bindings)
   $Listener.Start()
   Write-PXLog -Status "Information" -Context "SERVER" -Description "server started listening on $bindings"
