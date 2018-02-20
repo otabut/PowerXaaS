@@ -13,6 +13,13 @@ An endpoint is a specific action requested by a client through a combination of 
 Examples :  `GET /version` or `POST /echo` or `GET /addition/{op}` which allows to have parameters passed within the URL
 
 
+### API version
+
+When calling an endpoint, the client must also specify the version of the API. For instance : `/api/v1/<myEndpoint>`.
+
+This will allow to manage several versions of your API "side-by-side", so that you can make key users test your new API (Canary testing) or easily rollback to the previous one.
+
+
 ### Configuration file
 
 With PowerXaaS, the web schema that describe features and endpoints is stored in a configuration file : PowerXaaS.conf. The format of the file is JSON. 
