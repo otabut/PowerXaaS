@@ -30,5 +30,5 @@ Setting up HTTPS on your server will need to execute the following commands (Win
 2. Create your self-signed certificate and write down the thumbprint : `$certHash = (New-SelfSignedCertificate -DnsName _<yourdnsname>_ -CertStoreLocation Cert:\LocalMachine\My).thumbprint`
 3. Copy that certificate to the CA store
 4. Attach your certificate to your binding : `Add-NetIPHttpsCertBinding -IpPort "<ipaddress>:<port>" -CertificateHash $certhash -CertificateStoreName "My" -ApplicationId "{$guid}" -NullEncryption $false`
-5. Check with netsh http show sslcert
+5. Check with `netsh http show sslcert`
 
