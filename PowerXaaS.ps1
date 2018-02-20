@@ -1,6 +1,33 @@
+<#
+.SYNOPSIS
+    PowerXaaS
+.DESCRIPTION
+    Powershell module for exposing features "as a Service" through a HTTP server
+.LINK
+    https://github.com/otabut/PowerXaaS
+.NOTES
+    Author: Olivier TABUT
+    1.1.0 release (20/02/2018)
+.PARAMETER Ip
+    Optionnal. IP address the server will listen to. Default value is localhost.
+.PARAMETER Port
+    Mandatory. Port number the server will listen to.
+.PARAMETER LogFile
+    Optionnal. Path for the log file.
+.PARAMETER Console
+    Optionnal. Switch to display logs on the console (for testing purpose).
+.PARAMETER Customlogging
+    Optionnal. Switch to use custom logging function.
+.EXAMPLE
+    .\PowerXaaS.ps1 -Port 8082 -Console
+.EXAMPLE
+    .\PowerXaaS.ps1 -Ip 1.2.3.4 -Port 8082 -LogFile .\PowerXaas.log
+#>
+
+
 param (
-  [Parameter(Mandatory=$true)]$Port,
   [Parameter(Mandatory=$false)]$Ip="localhost",
+  [Parameter(Mandatory=$true)]$Port,
   [Parameter(Mandatory=$false)]$LogFile,
   [Parameter(Mandatory=$false)][Switch]$Console,
   [Parameter(Mandatory=$false)][Switch]$CustomLogging
