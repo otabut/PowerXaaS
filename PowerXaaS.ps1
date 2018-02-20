@@ -106,10 +106,12 @@ try
     {
       #Read config and get action
       Write-PXLog -Status "Information" -Context "SERVER" -Description "------ processing request ------"
+      $Endpoint = ($Request.url.localpath.substring(1) -replace 'api/v.','')
+      $Method = $Request.httpmethod
       Write-PXLog -Status "Information" -Context "SERVER" -Description "reading configuration file"
       $Config = Get-Content .\PowerXaaS.conf | ConvertFrom-Json
-      $Endpoints = $Config.features | select -ExpandProperty endpoints -Property @{Label="feature";Expression={$_.Name}}, active | where {$_.Active -eq 'yes'}
-      $Feature = ($Endpoints | where {($_.Method -eq $Request.httpmethod) -and (($Request.url.localpath.substring(1) -replace 'api/v.','') -match ("^$($_.url)$".replace("{","(?<").replace("}", ">.*)")).substring(1))} | Select-Object -First 1).feature
+      $AllEndpoints = $Config.features | select -ExpandProperty endpoints -Property @{Label="feature";Expression={$_.Name}}, active | where {$_.Active -eq 'yes'}
+      $Feature = ($AllEndpoints | where {($Method -eq $_.Method) -and ($Endpoint -match ("^$($_.url)$".replace("{","(?<").replace("}", ">.*)")).substring(1))} | Select-Object -First 1).feature
       $Parameters = ([PSCustomObject]$Matches)
       
       if ($Feature)
@@ -118,7 +120,7 @@ try
         #Check authorization
         if ($Request.headers.GetValues("Authorization") -eq $null)
         {
-          if (($Request.url.localpath.substring(1) -replace 'api/v.','') -eq '/connect')
+          if ($Endpoint -eq '/connect')
           {
             $Authorized = $true
           }
@@ -129,7 +131,8 @@ try
         }
         else
         {
-          $Authorized = Request-PXAuthorization -Authorization $Request.headers.GetValues("Authorization")
+          $Token = $Request.headers.GetValues("Authorization").split(' ')[1]
+          $Authorized = Request-PXAuthorization -Token $Token -Feature $Feature -Endpoint $Endpoint -Method $Method
         }
 
         if ($Authorized)
