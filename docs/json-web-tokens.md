@@ -42,8 +42,8 @@ You will also probably need that code before :
 
 There are 2 scripts designed to manage authentication and authorization : `connect.ps1` and `Request-PXAuthorization.ps1`
 
-Connect.ps1 is part of the API since it is an endpoint exposed to clients. This is the one used for authentication. You may need to update it your own way to match your needs.
+`Connect.ps1` is part of the API since it is an endpoint exposed to clients. This is the one used for authentication. You may need to update it your own way to match your needs.
 
-Request-PXAuthorization.ps1 is used to manage authorizations. You also may need to update it your own way to match your needs.
+`Request-PXAuthorization.ps1` is used to manage authorizations. You also may need to update it your own way to match your needs.
 
 I Hope I will be able to propose a more mature solution for next releases of PowerXaaS.
