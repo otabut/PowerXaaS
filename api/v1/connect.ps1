@@ -7,7 +7,7 @@ $CredentialsList = @{"JohnDoe"="blabla";"WalterWhite"="CrystalMeth";"DexterMorga
 function MAA-ConvertTo-Base64([string]$data)
 {
     $temp = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($data))
-    $temp = $temp -replace ‘=’,”"
+    $temp = $temp -replace '=',''
     
     return $temp
 }
@@ -18,7 +18,7 @@ function MAA-JWT-EncodeSignature([string]$data,[string]$secret)
     $hmacsha.key = [Text.Encoding]::ASCII.GetBytes($secret)
     $signature = $hmacsha.ComputeHash([Text.Encoding]::ASCII.GetBytes($data))
     $signature = [Convert]::ToBase64String($signature)
-    $signature = $signature -replace ‘=’,”"
+    $signature = $signature -replace '=',''
 
     return $signature
 }
