@@ -22,7 +22,7 @@ netsh http add urlacl url='http://_<ipaddress>_:_<port>_/' user=everyone sddl='D
 netsh http show urlacl
   
 
-### HTTPS
+### HTTPS setup
 
 Setting up HTTPS on your server will need to execute the following commands (Windows 2012 R2 and up) :
 
