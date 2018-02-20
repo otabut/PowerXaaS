@@ -7,7 +7,7 @@ There is a special endpoint for authenticating : /connect.
 
 You must call it that way :
 
-    $Body = '{"Username"="<yourname>";"password":"<yourpassword>"}'
+    $Body = '{"Username":"<yourname>","password":"<yourpassword>"}'
     $Result = Invoke-WebRequest -Uri https://<ipaddress>:<port>/connect -Method POST -Body $Body
     $Result.Content | ConvertFrom-JSON
 
@@ -21,6 +21,21 @@ The token will then be used until expiration date to authenticate by placing it 
     $Token = ($Result.Content | ConvertFrom-JSON).Token
     $Headers = @{"Authorization" = "Bearer " + $Token}
     $Result = Invoke-WebRequest -Uri https://<ipaddress>:<port>/version -Method GET -Headers $Headers
+
+You will also probably need that code before :
+
+    add-type @"
+      using System.Net;
+      using System.Security.Cryptography.X509Certificates;
+      public class TrustAllCertsPolicy : ICertificatePolicy {
+        public bool CheckValidationResult(
+          ServicePoint srvPoint, X509Certificate certificate,
+          WebRequest request, int certificateProblem) {
+            return true;
+          }
+      }
+    "@
+    [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
 
 ### Authentication and authorization management scripts
