@@ -1,9 +1,17 @@
-# --- Expose each function as part of the module
 
-foreach ($function in Get-ChildItem -Path "$($PSScriptRoot)\Functions\*.ps1" -Recurse -Verbose:$VerbosePreference)
+# --- Expose each Private function as part of the module
+foreach ($PrivateFunction in Get-ChildItem -Path "$($PSScriptRoot)\Functions\Private\*.ps1" -Verbose:$VerbosePreference)
 {
-  . $Function.FullName
-  $BaseName = [System.IO.Path]::GetFileNameWithoutExtension($Function)
+    . $PrivateFunction.FullName
+}
+
+
+# --- Expose and export each Public function as part of the module
+
+foreach ($PublicFunction in Get-ChildItem -Path "$($PSScriptRoot)\Functions\*.ps1" -Verbose:$VerbosePreference)
+{
+  . $PublicFunction.FullName
+  $BaseName = [System.IO.Path]::GetFileNameWithoutExtension($PublicFunction)
     
   # --- Support DEPRECATED functions. Ensure that we are exporting only the function name
   $DepricatedKeyword = "DEPRECATED-"
