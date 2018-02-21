@@ -1,5 +1,5 @@
 
-Here are code snippets or website that were more than inspiration for **PowerXaas** :
+Here are code snippets or website that were more than just inspiration for **PowerXaas** :
 
 [Tiberriver256](https://gist.github.com/Tiberriver256/868226421866ccebd2310f1073dd1a1e)
 
