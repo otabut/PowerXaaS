@@ -11,4 +11,7 @@ Here are code snippets or website that were more than inspiration for **PowerXaa
 
 [Mathieu Poignant](https://blog.octo.com/zero-downtime-deployment/)
 
+[JF Larvoire](https://github.com/JFLarvoire/SysToolsLib/blob/master/PowerShell/PSService.ps1)
+
+
 Thank you !
