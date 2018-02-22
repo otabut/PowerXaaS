@@ -1,6 +1,7 @@
 Function Receive-PXRequest
 {
   param (
+    [Parameter(Mandatory=$true)]$Id,
     [Parameter(Mandatory=$true)]$Context
   )
 
