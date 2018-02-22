@@ -179,7 +179,7 @@ Function Send-PipeMessage {
     $sw.AutoFlush = $true
     $sw.WriteLine($Message)
   } catch {
-     "Error sending pipe $pipeName message: $_"
+    Write-PXLog -Status "Error" -Context "Pipe" -Description "Error sending pipe $pipeName message: $_"
   } finally {
     if ($sw) {
       $sw.Dispose() # Release resources
@@ -482,4 +482,3 @@ $source = @"
     }
   }
 "@
-
