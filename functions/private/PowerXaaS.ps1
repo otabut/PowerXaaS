@@ -184,7 +184,7 @@ if ($Version) {         # If the -Version switch is specified, display the scrip
 }
 
 # The following commands write to the event log, but we need to make sure the PowerXaaS source is defined.
-New-EventLog -LogName $logName -Source $serviceName -ea SilentlyContinue
+New-EventLog -LogName $logName -Source $serviceName -ErrorAction SilentlyContinue
 
 if ($SCMStart) {        # The SCM tells us to start the service
   Write-PXLog -Status "Information" -Context "SCMStart" -Description "Starting script '$scriptFullName' -Service"
@@ -235,7 +235,7 @@ if ($Status) {          # Get the current service status
     Write-Host "$serviceName Process ID = $spid"
   }
   try {
-    $pss = Get-Service $serviceName -ea stop # Will error-out if not installed
+    $pss = Get-Service $serviceName -ErrorAction stop # Will error-out if not installed
   }
   catch {
     Write-Host "Not Installed"
@@ -256,9 +256,9 @@ if ($Status) {          # Get the current service status
 if ($Setup) {           # Install the service
   # Check if it's necessary
   try {
-    $pss = Get-Service $serviceName -ea stop # Will error-out if not installed
+    $pss = Get-Service $serviceName -ErrorAction stop # Will error-out if not installed
     # Check if this script is newer than the installed copy.
-    if ((Get-Item $scriptCopy -ea SilentlyContinue).LastWriteTime -lt (Get-Item $scriptFullName -ea SilentlyContinue).LastWriteTime) {
+    if ((Get-Item $scriptCopy -ErrorAction SilentlyContinue).LastWriteTime -lt (Get-Item $scriptFullName -ErrorAction SilentlyContinue).LastWriteTime) {
       Write-Host "Service $serviceName is already Installed, but requires upgrade"
       & $scriptFullName -Remove
       throw "continue"
@@ -272,20 +272,28 @@ if ($Setup) {           # Install the service
     Write-Host "Starting installation..." # Also avoids a ScriptAnalyzer warning
     # And continue with the installation.
   }
-  if (!(Test-Path $installDir)) {											 
-    New-Item -ItemType directory -Path $installDir | Out-Null
-  }
-  # Copy the sources into the installation directory
-  if ($ScriptFullName -ne $scriptCopy) {
-    Write-Host "Copying files"
-    $length = (Get-Item .).FullName.Length
-    Get-ChildItem -Path . -recurse -include * | Copy-Item -Destination {
+  try {
+    # Create the installation directory if it doesn't exist
+    if (!(Test-Path $installDir)) {
+      New-Item -ItemType directory -Path $installDir -ErrorAction stop | Out-Null
+    }
+    # Copy the sources into the installation directory
+    if ($ScriptFullName -ne $scriptCopy) {
+      Write-Host "Copying files"
+      $length = (Get-Item .).FullName.Length
+      Get-ChildItem -Path . -recurse -include * | Copy-Item -Destination {
         if ($_.PSIsContainer) {
-            Join-Path $installDir $_.Parent.FullName.Substring($length)
+          Join-Path $installDir $_.Parent.FullName.Substring($length)
         } else {
-            Join-Path $installDir $_.FullName.Substring($length)
+          Join-Path $installDir $_.FullName.Substring($length)
         }
-    } -Force -Exclude $exclude
+      } -Force -Exclude $exclude -ErrorAction stop
+    }
+  }
+  catch
+  {
+    Write-Error "Failed to copy files to installation directory. Please check rights."
+    exit 1
   }
   # Generate the service .EXE from the C# source embedded in this script
   try {
@@ -316,7 +324,7 @@ if ($Setup) {           # Install the service
 if ($Remove) {          # Uninstall the service
   # Check if it's necessary
   try {
-    $pss = Get-Service $serviceName -ea stop # Will error-out if not installed
+    $pss = Get-Service $serviceName -ErrorAction stop # Will error-out if not installed
   }
   catch {
     Write-Host "Already uninstalled"
@@ -354,9 +362,11 @@ if ($Service) {         # Run the service as a background job
     $i=0
     do {  # Keep running until told to exit by the -Stop handler
       #### START ####
+      Set-content c:\debug.txt $i
+      $i++
       $Context = $null
       $Task = $Listener.GetContextAsync()  # Listen (Async)
-      $Task.ConfigureAwait($false)
+      $Task.wait(100)
       $Context = $Task.Result  # Get context, if any
       if ($Context)
       {
@@ -376,7 +386,7 @@ if ($Service) {         # Run the service as a background job
         }
       }
       #### END ####
-      $EventQueue = get-event
+      $EventQueue = Get-Event
       if ($EventQueue)  # Get the next incoming event
       {
         $Event = ($EventQueue | sort TimeGenerated)[0]
@@ -419,13 +429,15 @@ if ($Service) {         # Run the service as a background job
           "PowerXaaS" {
             Write-PXLog -Status "Information" -Context "SERVER" -Description "Receive request details"
             Receive-PXRequest -Id $EventId -Context $Message
+            Write-PXLog -Status "Information" -Context "SERVER" -Description "Response sent"
           }
           default {  # Should not happen
             Write-PXLog -Status "Information" -Context "Service" -Description "Unexpected source ${Source}"
           }
         }
       }
-    } while ($Message -ne "exit")
+    }
+    while ($Message -ne "exit")
     Write-PXLog -Status "Information" -Context "Service" -Description "Exit received"
   }
   catch  # An exception occurred while runnning the service
