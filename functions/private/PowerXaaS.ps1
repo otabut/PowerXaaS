@@ -179,7 +179,6 @@ $Global:CustomLogging = $CustomLogging
 #Write-PXLog -Status "Information" -Context "Start" -Description $MyInvocation.Line   # The exact command line that was used to start us
 
 if ($Version) {         # If the -Version switch is specified, display the script version and exit.
-  Write-PXLog -Status "Information" -Context "Version" -Description "Returning $scriptVersion"
   Write-Host $scriptVersion
   return
 }
