@@ -42,9 +42,9 @@ Function Write-PXLog
     $Line = [PSCustomObject]@{
       Date = $Date
       Hostname = $HostName
-      Step = $Step
       Status = $Status
-      Comment = $Comment
+      Context = $Context
+      Description = $Description
     }
     Start-PXCustomLogging $Line
   }
