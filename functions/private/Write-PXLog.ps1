@@ -41,7 +41,6 @@ Function Write-PXLog
   {
     $Line = [PSCustomObject]@{
       Date = $Date
-      Hostname = $HostName
       Status = $Status
       Context = $Context
       Description = $Description
