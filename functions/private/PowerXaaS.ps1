@@ -171,6 +171,7 @@ $Global:CustomLogging = $CustomLogging
 . $PSScriptRoot\functions\private\PowerXaaS-helper.ps1        # Call helper script which contains useful functions
 . $PSScriptRoot\functions\private\Write-PXLog.ps1             # Call logging function
 . $PSScriptRoot\functions\private\Receive-PXRequest.ps1       # Call main function
+. $PSScriptRoot\functions\private\Request-PXAuthorization.ps1                   # Call authorization function
 
 
 ### MAIN ###
@@ -358,34 +359,32 @@ if ($Service) {         # Run the service as a background job
     $Listener.Prefixes.Add($Bindings)
     $Listener.Start()  # Start listening
     Write-PXLog -Status "Information" -Context "SERVER" -Description "Server started listening on $bindings"
+    $Context = $null
+    $Task = $Listener.GetContextAsync()  # Listen (Async)
     # Now enter the main service event loop
-    $i=0
     do {  # Keep running until told to exit by the -Stop handler
-      #### START ####
-      Set-content c:\debug.txt $i
-      $i++
-      $Context = $null
-      $Task = $Listener.GetContextAsync()  # Listen (Async)
-      $Task.wait(100)
-      $Context = $Task.Result  # Get context, if any
-      if ($Context)
+      if ($Task.Wait(100))
       {
-        Write-PXLog -Status "Information" -Context "SERVER" -Description "Request received, creating new event"
-        New-Event -SourceIdentifier "PowerXaaS" -MessageData $Context | Out-Null
-      }
-      else
-      {
-        ### PAUSE CONDITION ###
-        if (Test-Path .\pause.*)
+        $Context = $Task.Result  # Get context, if any
+        if ($Context)
         {
-          $Delay = (get-item .\pause.*).Extension.substring(1)
-          Write-PXLog -Status "Warning" -Context "SERVER" -Description "server is paused for $delay seconds"
-          Start-Sleep -Seconds $Delay
-          Remove-Item .\pause.*
-          Write-PXLog -Status "Warning" -Context "SERVER" -Description "server resumes"
+          Write-PXLog -Status "Information" -Context "SERVER" -Description "Request received"
+          Receive-PXRequest -Id 1 -Context $Context
+          $Context = $null
+          $Task = $Listener.GetContextAsync()  # Listen (Async)
+        }
+        else
+        {
+          if (Test-Path .\pause.*)  # Pause condition
+          {
+            $Delay = (get-item .\pause.*).Extension.substring(1)
+            Write-PXLog -Status "Warning" -Context "SERVER" -Description "server is paused for $delay seconds"
+            Start-Sleep -Seconds $Delay
+            Remove-Item .\pause.*
+            Write-PXLog -Status "Warning" -Context "SERVER" -Description "server resumes"
+          }
         }
       }
-      #### END ####
       $EventQueue = Get-Event
       if ($EventQueue)  # Get the next incoming event
       {
@@ -426,18 +425,12 @@ if ($Service) {         # Run the service as a background job
               }
             }
           }
-          "PowerXaaS" {
-            Write-PXLog -Status "Information" -Context "SERVER" -Description "Receive request details"
-            Receive-PXRequest -Id $EventId -Context $Message
-            Write-PXLog -Status "Information" -Context "SERVER" -Description "Response sent"
-          }
           default {  # Should not happen
             Write-PXLog -Status "Information" -Context "Service" -Description "Unexpected source ${Source}"
           }
         }
       }
-    }
-    while ($Message -ne "exit")
+    } while ($Message -ne "exit")
     Write-PXLog -Status "Information" -Context "Service" -Description "Exit received"
   }
   catch  # An exception occurred while runnning the service
