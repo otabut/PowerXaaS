@@ -1,7 +1,7 @@
 Function Receive-PXRequest
 {
   param (
-    [Parameter(Mandatory=$true)]$Id,
+    [Parameter(Mandatory=$true)]$RequestId,
     [Parameter(Mandatory=$true)]$Context
   )
 
@@ -14,14 +14,14 @@ Function Receive-PXRequest
   $Malformed = $false
 
   ### PROCESS REQUEST ###
-  Write-PXLog -Status "Information" -Context "SERVER" -Description "****** REQUEST RECEIVED ******"
-  Write-PXLog -Status "Information" -Context "CLIENT" -Description "local path is $($Request.Url.LocalPath)"
-  Write-PXLog -Status "Information" -Context "CLIENT" -Description "HTTP method is $($Request.HttpMethod)"
-  Write-PXLog -Status "Information" -Context "CLIENT" -Description "host name is $($Request.UserHostName)"
-  Write-PXLog -Status "Information" -Context "CLIENT" -Description "user agent is $($Request.UserAgent)"
+  Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "Getting request details"
+  Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "local path is $($Request.Url.LocalPath)"
+  Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "HTTP method is $($Request.HttpMethod)"
+  Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "host name is $($Request.UserHostName)"
+  Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "user agent is $($Request.UserAgent)"
   foreach ($key in $Request.headers.AllKeys)
   {
-    Write-PXLog -Status "Information" -Context "CLIENT" -Description "$key`: $($Request.headers.GetValues($key))"
+    Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "$key`: $($Request.headers.GetValues($key))"
   }
 
   #Read body
@@ -32,29 +32,29 @@ Function Receive-PXRequest
     try
     {
       $Body = $StreamData | ConvertFrom-Json
-      Write-PXLog -Status "Information" -Context "SERVER" -Description "body is $($body -replace '(?<begin>[\;\{\s]password=)(?<pass>.*)(?<end>[\;\}])','${begin}********${end}')"
+      Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "body is $($body -replace '(?<begin>[\;\{\s]password=)(?<pass>.*)(?<end>[\;\}])','${begin}********${end}')"
     }
     catch
     {
       #Prevent from malformed JSON files
-      Write-PXLog -Status "Error" -Context "SERVER" -Description "$StreamData is not a valid JSON file"
+      Write-PXLog -Status "Error" -Context "Process $RequestId" -Description "$StreamData is not a valid JSON file"
       $Malformed = $true
     }
   }
   if ($Malformed)
   {
     $Result = [PSCustomObject]@{
-      ReturnCode = 400
+      ReturnCode = [System.Net.HttpStatusCode]::BadRequest
       Content = "Provided body is not a valid JSON file"
     }
   }
   else
   {
     #Read config and get action
-    Write-PXLog -Status "Information" -Context "SERVER" -Description "------ processing request ------"
+    Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "Ready to process request"
     $Endpoint = ($Request.url.localpath.substring(1) -replace 'api/v.','')
     $Method = $Request.httpmethod
-    Write-PXLog -Status "Information" -Context "SERVER" -Description "reading configuration file"
+    Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "Reading configuration file"
     $Config = Get-Content .\PowerXaaS.conf | ConvertFrom-Json
     $AllEndpoints = $Config.features | select -ExpandProperty endpoints -Property @{Label="feature";Expression={$_.Name}}, active | where {$_.Active -eq 'yes'}
     $Feature = ($AllEndpoints | where {($Method -eq $_.Method) -and ($Endpoint -match ("^$($_.url)$".replace("{","(?<").replace("}", ">.*)")).substring(1))} | Select-Object -First 1).feature
@@ -62,7 +62,7 @@ Function Receive-PXRequest
       
     if ($Feature)
     {
-      Write-PXLog -Status "Information" -Context "SERVER" -Description "matching feature: $feature"
+      Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "Matching feature: $feature"
       #Check authorization
       if ($Request.headers.GetValues("Authorization") -eq $null)
       {
@@ -83,7 +83,7 @@ Function Receive-PXRequest
 
       if ($Authorized)
       {
-        Write-PXLog -Status "Information" -Context "SERVER" -Description "authorization granted"
+        Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "Authorization granted"
         $Folder = ".\$($Request.Url.Segments[1].substring(0,$Request.Url.Segments[1].length-1))\$($Request.Url.Segments[2].substring(0,$Request.Url.Segments[2].length-1))"
         $Script = "$Folder\$Feature.ps1"
         $Parameters.PSObject.Properties.Remove('0')
@@ -95,56 +95,56 @@ Function Receive-PXRequest
         }
 
         #Run action
-        Write-PXLog -Status "Information" -Context "SERVER" -Description "calling - $Script"
+        Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "Calling - $Script"
         try
         {
           $Result = & "$Script" $Inputs
         }
         catch
         {
-          Write-PXLog -Status "Error" -Context "FEATURE" -Description "internal error"
+          Write-PXLog -Status "Error" -Context "Feature" -Description "Internal server error"
           $Result = [PSCustomObject]@{
-            ReturnCode = 500
-            Content = "error while processing $Script"
+            ReturnCode = [System.Net.HttpStatusCode]::InternalServerError
+            Content = "Error while processing $Script"
           }
         }
       }
       else
       {
-        Write-PXLog -Status "Error" -Context "SERVER" -Description "authorization denied"
+        Write-PXLog -Status "Error" -Context "Process $RequestId" -Description "Authorization denied"
         $Result = [PSCustomObject]@{
-          ReturnCode = 403
-          Content = 'authorization denied'
+          ReturnCode = [System.Net.HttpStatusCode]::Forbidden
+          Content = 'Authorization denied'
         }
       }
     }
     else
     {
       #Endpoint not found
-      Write-PXLog -Status "Error" -Context "SERVER" -Description "endpoint not found"
+      Write-PXLog -Status "Error" -Context "Process $RequestId" -Description "Endpoint not found"
       $Result = [PSCustomObject]@{
-        ReturnCode = 404
-        Content = "endpoint not found"
+        ReturnCode = [System.Net.HttpStatusCode]::NotFound
+        Content = "Endpoint not found"
       }
     }
   }
         
   if ($Result.ReturnCode -notmatch "\d\d\d")
   {
-    Write-PXLog -Status "Error" -Context "FEATURE" -Description "invalid return code"
+    Write-PXLog -Status "Error" -Context "Feature" -Description "Invalid return code"
     $Result = [PSCustomObject]@{
-      ReturnCode = 500
-      Content = "invalid return code"
+      ReturnCode = [System.Net.HttpStatusCode]::InternalServerError
+      Content = "Invalid return code"
     }
   }
-  Write-PXLog -Status "Information" -Context "SERVER" -Description "------  request processed  ------"
+  Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "Request processed"
 
   ### SEND RESPONSE ###    
-  Write-PXLog -Status "Information" -Context "SERVER" -Description "return code is $($Result.ReturnCode)"
+  Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "Return code is $($Result.ReturnCode)"
   $Response.statuscode = $Result.ReturnCode
   if ($Result.Content)
   {
-    Write-PXLog -Status "Information" -Context "SERVER" -Description "content is $($Result.Content)"
+    Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "Content is $($Result.Content)"
     $Buffer = [Text.Encoding]::UTF8.GetBytes($Result.Content)
     $Response.ContentType = 'application/json'
     $Response.ContentLength64 = $Buffer.length
@@ -152,8 +152,7 @@ Function Receive-PXRequest
   }
   else
   {
-    Write-PXLog -Status "Information" -Context "SERVER" -Description "no content"
+    Write-PXLog -Status "Information" -Context "Process $RequestId" -Description "No content to send back"
   }
   $Response.Close()
-  Write-PXLog -Status "Information" -Context "SERVER" -Description "******  RESPONSE SENT  ******"
 }
