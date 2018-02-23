@@ -168,16 +168,14 @@ $Global:CustomLogging = $CustomLogging
 
 
 ### LOAD FUNCTIONS ###
-. $PSScriptRoot\functions\private\PowerXaaS-helper.ps1        # Call helper script which contains useful functions
-. $PSScriptRoot\functions\private\Write-PXLog.ps1             # Call logging function
-. $PSScriptRoot\functions\private\Receive-PXRequest.ps1       # Call main function
-. $PSScriptRoot\functions\private\Request-PXAuthorization.ps1                   # Call authorization function
+. $PSScriptRoot\functions\private\PowerXaaS-helper.ps1            # Call helper script which contains thread management functions
+. $PSScriptRoot\functions\private\Write-PXLog.ps1                 # Call logging function
+. $PSScriptRoot\functions\private\Start-PXCustomLogging.ps1       # Call custom logging function
+. $PSScriptRoot\functions\private\Receive-PXRequest.ps1           # Call main function
+. $PSScriptRoot\functions\private\Request-PXAuthorization.ps1     # Call authorization function
 
 
 ### MAIN ###
-
-#Write-PXLog -Status "Information" -Context "Start" -Description ""                   # Insert one blank line to separate test sessions logs
-#Write-PXLog -Status "Information" -Context "Start" -Description $MyInvocation.Line   # The exact command line that was used to start us
 
 if ($Version) {         # If the -Version switch is specified, display the script version and exit.
   Write-Host $scriptVersion
@@ -343,12 +341,14 @@ if ($Remove) {          # Uninstall the service
   if (Test-Path $installDir) {
     Write-Host "Deleting files"
     Write-Host "Removing directory $installDir"
-    Remove-Item $installDir -Recurse
+    Remove-Item $installDir -Recurse -ErrorAction silentlyContinue
   }
   return
 }
 
 if ($Service) {         # Run the service as a background job
+  Write-PXLog -Status "Information" -Context "Start" -Description ""         # Insert one blank line to separate sessions logs
+  Write-PXLog -Status "Information" -Context "Start" -Description $MyInvocation.Line   # The exact command line that was used to start us
   Write-EventLog -LogName $logName -Source $serviceName -EventId 1005 -EntryType Information -Message "$scriptName -Service # Beginning background job"
   try {
     # Start the control pipe handler thread
@@ -358,7 +358,8 @@ if ($Service) {         # Run the service as a background job
     $Bindings = (Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings).Bindings
     $Listener.Prefixes.Add($Bindings)
     $Listener.Start()  # Start listening
-    Write-PXLog -Status "Information" -Context "SERVER" -Description "Server started listening on $bindings"
+    Write-PXLog -Status "Information" -Context "HTTPD" -Description "Server started listening on $bindings"
+    $RequestID = 1
     $Context = $null
     $Task = $Listener.GetContextAsync()  # Listen (Async)
     # Now enter the main service event loop
@@ -368,8 +369,10 @@ if ($Service) {         # Run the service as a background job
         $Context = $Task.Result  # Get context, if any
         if ($Context)
         {
-          Write-PXLog -Status "Information" -Context "SERVER" -Description "Request received"
-          Receive-PXRequest -Id 1 -Context $Context
+          Write-PXLog -Status "Information" -Context "HTTPD" -Description "Client request has been received"
+          Receive-PXRequest -Id $RequestID -Context $Context
+          Write-PXLog -Status "Information" -Context "HTTPD" -Description "Client response has been sent"
+          $RequestID++
           $Context = $null
           $Task = $Listener.GetContextAsync()  # Listen (Async)
         }
@@ -378,10 +381,10 @@ if ($Service) {         # Run the service as a background job
           if (Test-Path .\pause.*)  # Pause condition
           {
             $Delay = (get-item .\pause.*).Extension.substring(1)
-            Write-PXLog -Status "Warning" -Context "SERVER" -Description "server is paused for $delay seconds"
+            Write-PXLog -Status "Warning" -Context "HTTPD" -Description "Server has been paused for $delay seconds"
             Start-Sleep -Seconds $Delay
             Remove-Item .\pause.*
-            Write-PXLog -Status "Warning" -Context "SERVER" -Description "server resumes"
+            Write-PXLog -Status "Warning" -Context "HTTPD" -Description "Server has resumed"
           }
         }
       }
@@ -430,8 +433,9 @@ if ($Service) {         # Run the service as a background job
           }
         }
       }
-    } while ($Message -ne "exit")
-    Write-PXLog -Status "Information" -Context "Service" -Description "Exit received"
+    }
+    While ($Message -ne "exit")
+    Write-PXLog -Status "Information" -Context "Service" -Description "Exit command has been received"
   }
   catch  # An exception occurred while runnning the service
   {
@@ -446,7 +450,7 @@ if ($Service) {         # Run the service as a background job
     
     # Stop listening
     $Listener.Stop()
-    Write-PXLog -Status "Warning" -Context "SERVER" -Description "server stopped"
+    Write-PXLog -Status "Warning" -Context "HTTPD" -Description "Server has stopped"
     
     # Log a termination event, no matter what the cause is.
     Write-EventLog -LogName $logName -Source $serviceName -EventId 1006 -EntryType Information -Message "$script -Service # Exiting"
