@@ -32,7 +32,15 @@ try
     {
       if ($CredentialsList.$($Inputs.body.username) -eq $Inputs.body.password)  #Credentials validation
       {
-        $ExpirationDate = (Get-Date).AddHours(4)
+        try
+        {
+          $TokenLifetime = (Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name TokenLifetime).TokenLifetime 
+        }
+        catch
+        {
+          $TokenLifetime = "4"
+        }
+        $ExpirationDate = (Get-Date).AddHours($TokenLifetime)
         $JSONheader = '{"alg":"HS256","typ":"JWT"}'
         $JSONpayload = '{"APIVersion":"1.0.0","username":"'+$Inputs.body.username+'","expiration-date":"'+$ExpirationDate+'"}'
         $JWTHeader = MAA-ConvertTo-Base64 $JSONheader
