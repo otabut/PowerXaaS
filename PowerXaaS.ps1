@@ -213,6 +213,10 @@ if ($Setup)            # Install the service
     {
       New-Item -ItemType directory -Path $InstallDir -ErrorAction stop | Out-Null
     }
+    if (!(Test-Path "$InstallDir\logs"))
+    {
+      New-Item -ItemType directory -Path "$InstallDir\logs" -ErrorAction stop | Out-Null
+    }
     if ($ScriptFullName -ne $ScriptCopy)
     {
       Write-Output "Copying files"
@@ -442,7 +446,7 @@ if ($Service)          # Run the service as a background job
         $Source = $Event.SourceIdentifier
         $Message = $Event.MessageData
         $EventTime = $Event.TimeGenerated.TimeofDay
-        Write-Log -Status "Information" -Context "Service" -Description "Event at $EventTime from ${Source}: $Message"
+        #Write-Log -Status "Information" -Context "Service" -Description "Event at $EventTime from ${Source}: $Message"
         $event | Remove-Event  # Flush the event from the queue
         switch ($Source)
         {
@@ -453,7 +457,7 @@ if ($Service)          # Run the service as a background job
               "ControlMessage"  # Required. Message received by the control pipe thread
               {
                 $State = $Event.SourceEventArgs.InvocationStateInfo.state
-                Write-Log -Status "Information" -Context "Service" -Description "Thread $Source state changed to $State"
+                #Write-Log -Status "Information" -Context "Service" -Description "Thread $Source state changed to $State"
                 switch ($state)
                 {
                   "Completed"
