@@ -2,7 +2,7 @@ Function New-PXFeature
 {
   param (
     [Parameter(Mandatory=$true)]$Name,
-    [Parameter(Mandatory=$false)][ValidateSet("yes","no")]$State='no'
+    [Parameter(Mandatory=$false)][ValidateSet("yes","no")]$Active='no'
   )
 
   $ErrorActionPreference = "stop"
@@ -18,7 +18,7 @@ Function New-PXFeature
     {
       $Feature = [PSCustomObject]@{
         name = $Name
-        active = $State
+        active = $Active
         endpoints = @()
       }
       $Config.features += $Feature
