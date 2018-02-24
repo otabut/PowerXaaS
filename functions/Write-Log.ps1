@@ -1,4 +1,4 @@
-Function Write-PXLog
+Function Write-Log
 {
   Param (
     [parameter(Mandatory=$true)][ValidateSet("Information","Warning","Error")][String]$Status,
@@ -45,6 +45,6 @@ Function Write-PXLog
       Context = $Context
       Description = $Description
     }
-    Start-PXCustomLogging $Line
+    Start-CustomLogging $Line
   }
 }
