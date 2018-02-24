@@ -21,7 +21,7 @@ Setting up HTTPS on your server will need to execute the following commands (Win
 ### Install PowerXaaS
 
 #### Install
-Just run `.\PowerXaaS.ps1 -Setup -Ip <ipaddress> -Port <port> [-Start] [-CustomLogging]`. You can choose to use custom logging function : write your own code in `Start-PXCustomLogging.ps1`
+Just run `.\PowerXaaS.ps1 -Setup -Ip <ipaddress> -Port <port> [-Start] [-CustomLogging]`. You can choose to use custom logging function : write your own code in `Start-CustomLogging.ps1`
 
 #### Start
 Then, start service or run `.\PowerXaaS.ps1 -Start`
