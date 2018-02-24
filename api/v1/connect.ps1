@@ -1,5 +1,5 @@
 param (
-  [Parameter(Mandatory=$true)]$inputs
+  [Parameter(Mandatory=$true)]$Inputs
 )
 
 $CredentialsList = @{"JohnDoe"="blabla";"WalterWhite"="CrystalMeth";"DexterMorgan"="SliceOfLife"}
@@ -26,15 +26,23 @@ function MAA-JWT-EncodeSignature([string]$data,[string]$secret)
 $ErrorActionPreference = 'stop'
 try
 {
-  switch -regex ($inputs.url)
+  switch -regex ($Inputs.url)
   {
     "/connect"
     {
-      if ($CredentialsList.$($inputs.body.username) -eq $inputs.body.password)  #Credentials validation
+      if ($CredentialsList.$($Inputs.body.username) -eq $Inputs.body.password)  #Credentials validation
       {
-        $ExpirationDate = (Get-Date).AddHours(4)
+        try
+        {
+          $TokenLifetime = (Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name TokenLifetime).TokenLifetime 
+        }
+        catch
+        {
+          $TokenLifetime = "4"
+        }
+        $ExpirationDate = (Get-Date).AddHours($TokenLifetime)
         $JSONheader = '{"alg":"HS256","typ":"JWT"}'
-        $JSONpayload = '{"APIVersion":"1.0.0","username":"'+$inputs.body.username+'","expiration-date":"'+$ExpirationDate+'"}'
+        $JSONpayload = '{"APIVersion":"1.0.0","username":"'+$Inputs.body.username+'","expiration-date":"'+$ExpirationDate+'"}'
         $JWTHeader = MAA-ConvertTo-Base64 $JSONheader
         $JWTPayload = MAA-ConvertTo-Base64 $JSONpayload
         $JWTHeaderandPayload = $JWTHeader + "." + $JWTpayload
@@ -48,14 +56,14 @@ try
         }
 
         $result = [PSCustomObject]@{
-          ReturnCode = 200
+          ReturnCode = [Int][System.Net.HttpStatusCode]::OK
           Content = $Content | ConvertTo-JSON
         }
       }
       else
       {
         $result = [PSCustomObject]@{
-          ReturnCode = 401
+          ReturnCode = [Int][System.Net.HttpStatusCode]::Unauthorized
           Content = "Authentication has failed"
         }
       }
@@ -64,8 +72,8 @@ try
     default
     {
       $result = [PSCustomObject]@{
-        ReturnCode = 404
-        Content = "this endpoint is not managed by this API version"
+        ReturnCode = [Int][System.Net.HttpStatusCode]::NotFound
+        Content = "This endpoint is not managed by this API version"
       }
     }
   }
@@ -73,7 +81,7 @@ try
 catch
 {
   $result = [PSCustomObject]@{
-    ReturnCode = 500
+    ReturnCode = [Int][System.Net.HttpStatusCode]::InternalServerError
     Content = "Error while processing"
   }
 }

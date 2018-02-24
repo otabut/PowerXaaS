@@ -3,8 +3,8 @@ Function Get-PXFeature
   $ErrorActionPreference = "stop"
   try
   {
-    $ModulePath = split-path (Get-Module PowerXaaS).path
-    return (Get-Content "$ModulePath\PowerXaaS.conf" | ConvertFrom-Json).features | select Name,Active
+    $ConfigurationFile = "${ENV:ProgramFiles}\PowerXaaS\PowerXaaS.conf"
+    return (Get-Content $ConfigurationFile | ConvertFrom-Json).features | select Name,Active
   }
   catch
   {

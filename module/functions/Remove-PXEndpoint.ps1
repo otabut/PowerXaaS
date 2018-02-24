@@ -9,15 +9,15 @@ Function Remove-PXEndpoint
   $ErrorActionPreference = "stop"
   try
   {
-    $ModulePath = split-path (Get-Module PowerXaaS).path
-    $Config = Get-Content "$ModulePath\PowerXaaS.conf" | ConvertFrom-Json
+    $ConfigurationFile = "${ENV:ProgramFiles}\PowerXaaS\PowerXaaS.conf"
+    $Config = Get-Content $ConfigurationFile | ConvertFrom-Json
     If ($Config.features | where {$_.Name -eq $Feature})
     {
       $Endpoint = ($Config.features | where {$_.Name -eq $Feature}).endpoints | where {($_.url -eq $Url) -and ($_.method -eq $Method)}
       If ($Endpoint)
       {
         ($Config.features | where {$_.Name -eq $Feature}).endpoints = ($Config.features | where {$_.Name -eq $Feature}).endpoints | where {($_.url -ne $Url) -and ($_.method -ne $Method)}
-        $Config | ConvertTo-Json -Depth 5 | Set-Content $ModulePath\PowerXaaS.conf
+        $Config | ConvertTo-Json -Depth 5 | Set-Content $ConfigurationFile
       }
       else
       {

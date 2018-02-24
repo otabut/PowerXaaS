@@ -23,7 +23,9 @@ Inside the Inputs object, you will find :
 
 Custom features scripts must return the following Powershell Custom Object :
 
-`[PSCustomObject]@{ReturnCode=<3-digits standard HTTP return code>;Content=<json string>}`
+`[PSCustomObject]@{ReturnCode=<[System.Net.HttpStatusCode]>;Content=<json string>}`
+
+see [System.Net.HttpStatusCode](https://msdn.microsoft.com/fr-fr/library/system.net.httpstatuscode(v=vs.110).aspx)
 
 
 ### Examples

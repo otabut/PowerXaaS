@@ -8,8 +8,8 @@ Function New-PXFeature
   $ErrorActionPreference = "stop"
   try
   {
-    $ModulePath = split-path (Get-Module PowerXaaS).path
-    $Config = Get-Content "$ModulePath\PowerXaaS.conf" | ConvertFrom-Json
+    $ConfigurationFile = "${ENV:ProgramFiles}\PowerXaaS\PowerXaaS.conf"
+    $Config = Get-Content $ConfigurationFile | ConvertFrom-Json
     If ($Config.features | where {$_.Name -eq $Name})
     {
       Write-Warning "Feature $Name already exists"
@@ -22,7 +22,7 @@ Function New-PXFeature
         endpoints = @()
       }
       $Config.features += $Feature
-      $Config | ConvertTo-Json -Depth 5 | Set-Content $ModulePath\PowerXaaS.conf
+      $Config | ConvertTo-Json -Depth 5 | Set-Content $ConfigurationFile
     }
   }
   catch

@@ -10,7 +10,7 @@ try
     "/version"
     {
       $result = [PSCustomObject]@{
-        ReturnCode = 200
+        ReturnCode = [Int][System.Net.HttpStatusCode]::OK
         Content = "Version 9.0.0"
       }
     }
@@ -18,8 +18,8 @@ try
     default
     {
       $result = [PSCustomObject]@{
-        ReturnCode = 404
-        Content = "this endpoint is not managed by this API version"
+        ReturnCode = [Int][System.Net.HttpStatusCode]::NotFound
+        Content = "This endpoint is not managed by this API version"
       }
     }
   }
@@ -27,7 +27,7 @@ try
 catch
 {
   $result = [PSCustomObject]@{
-    ReturnCode = 500
+    ReturnCode = [Int][System.Net.HttpStatusCode]::InternalServerError
     Content = "Error while processing"
   }
 }

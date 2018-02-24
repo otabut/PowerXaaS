@@ -1,4 +1,4 @@
-Function Start-PXCustomLogging
+Function Start-CustomLogging
 {
   Param (
     [parameter(Mandatory=$true)]$Line

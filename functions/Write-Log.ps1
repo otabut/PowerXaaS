@@ -1,4 +1,4 @@
-Function Write-PXLog
+Function Write-Log
 {
   Param (
     [parameter(Mandatory=$true)][ValidateSet("Information","Warning","Error")][String]$Status,
@@ -8,7 +8,7 @@ Function Write-PXLog
 
   #Format message to log
   $Date = Get-Date -format "dd/MM/yyyy HH:mm:ss.fff"
-  $Message = "$Date - $Status - $Context`: $Description"
+  $Message = "$Date - $Status - $Context - $Description"
   
   #Handle Console Output
   if ($Global:Console.IsPresent)
@@ -34,6 +34,24 @@ Function Write-PXLog
   if ($Global:LogFile)
   {
     Add-Content $Global:Logfile $Message
+    try
+    {
+      $LogSize = (Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name LogSize).LogSize
+    }
+    catch
+    {
+      $LogSize = "2"
+    }
+
+    if ((Get-Item $Global:Logfile).length -gt (iex "$LogSize`Mb"))
+    {
+      $Parent = "$(Split-Path $Global:Logfile -Parent)\logs"
+      $Leaf = "$(Split-Path $Global:Logfile -Leaf)".split('.')[0]
+      $Leaf += Get-Date -Format "_yyyy-MM-dd_HH-mm-ss-fff."
+      $Leaf += "$(Split-Path $Global:Logfile -Leaf)".split('.')[1]
+      $Target = "$Parent\$Leaf"
+      Move-Item $Global:Logfile $Target
+    }
   }
 
   #Handle custom logging function
@@ -41,11 +59,10 @@ Function Write-PXLog
   {
     $Line = [PSCustomObject]@{
       Date = $Date
-      Hostname = $HostName
-      Step = $Step
       Status = $Status
-      Comment = $Comment
+      Context = $Context
+      Description = $Description
     }
-    Start-PXCustomLogging $Line
+    Start-CustomLogging $Line
   }
 }
