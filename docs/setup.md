@@ -21,15 +21,15 @@ Setting up HTTPS on your server will need to execute the following commands (Win
 ### Install PowerXaaS
 
 #### Install
-Just run `.\PowerXaaS.ps1 -setup -ip <ipaddress> -port <port> [-CustomLogging]`. You can choose to use custom logging function : write your own code in `Start-PXCustomLogging.ps1`
+Just run `.\PowerXaaS.ps1 -Setup -Ip <ipaddress> -Port <port> [-Start] [-CustomLogging]`. You can choose to use custom logging function : write your own code in `Start-PXCustomLogging.ps1`
 
 #### Start
-Then, start service or run `.\PowerXaaS.ps1 -start`
+Then, start service or run `.\PowerXaaS.ps1 -Start`
 
 #### Pause
 Sometimes, if you need to modify the configuration without downtime, you may choose to quiesce incoming requests in order to avoid side effects.
 
-In order to do that, just run `.\PowerXaaS.ps1 -pause <delay>` where `<delay>` is a number in seconds.
+In order to do that, just run `.\PowerXaaS.ps1 -Pause <delay>` where `<delay>` is a number in seconds.
 
 Server will still communicate with clients, so it will be transparent for them, unless they set a timeout shorter than the paused delay, but generally clients don't set a timeout value.
 
@@ -37,7 +37,7 @@ Server will still communicate with clients, so it will be transparent for them, 
 PowerXaaS will be cleanly stopped if you stop the Windows service or if the computer shuts down.
 
 #### Remove
-Just run `.\PowerXaaS.ps1 -remove`
+Just run `.\PowerXaaS.ps1 -Remove`
 
 ### Monitoring
 
