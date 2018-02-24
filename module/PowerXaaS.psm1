@@ -1,9 +1,9 @@
 
 # --- Expose each Private function as part of the module
-foreach ($PrivateFunction in Get-ChildItem -Path "$($PSScriptRoot)\Functions\Private\*.ps1" -Verbose:$VerbosePreference)
-{
-    . $PrivateFunction.FullName
-}
+#foreach ($PrivateFunction in Get-ChildItem -Path "$($PSScriptRoot)\Functions\Private\*.ps1" -Verbose:$VerbosePreference)
+#{
+#    . $PrivateFunction.FullName
+#}
 
 
 # --- Expose and export each Public function as part of the module
