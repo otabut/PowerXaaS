@@ -34,6 +34,15 @@ Function Write-Log
   if ($Global:LogFile)
   {
     Add-Content $Global:Logfile $Message
+    if ((Get-Item $Global:Logfile).length -gt 2mb)
+    {
+      $Parent = "$(Split-Path $Global:Logfile -Parent)\logs"
+      $Leaf = "$(Split-Path $Global:Logfile -Leaf)".split('.')[0]
+      $Leaf += Get-Date -Format "_yyyy-MM-dd_HH-mm-ss-fff."
+      $Leaf += "$(Split-Path $Global:Logfile -Leaf)".split('.')[1]
+      $Target = "$Parent\$Leaf"
+      Move-Item $Global:Logfile $Target
+    }
   }
 
   #Handle custom logging function
