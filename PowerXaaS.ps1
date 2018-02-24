@@ -255,7 +255,6 @@ if ($Setup)            # Install the service
   New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings -Value "https://$ip`:$port/" -PropertyType String -Force | Out-Null
   New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name TokenLifetime -Value "4" -PropertyType String -Force | Out-Null    # value in hours
   New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name LogSize -Value "2" -PropertyType String -Force | Out-Null          # value in Mb
-  New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name VerboseLevel -Value "high" -PropertyType String -Force | Out-Null  # low, medium, high
   # Register the service
   Write-Output "Registering service $ServiceName"
   if ($Credential.UserName)
