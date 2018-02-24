@@ -29,9 +29,7 @@ You should not edit the configuration file directly : the Powershell module cont
 
 ### Auto-refresh
 
-Each modification regarding features/endpoints are immediate and doesn't need server restart. It will be applied to next request received. 
-
-But in oder to avoid any troubles, you can quiesce the server. For that you may need to pause requests processing. See [HTTP server commands](https://github.com/otabut/PowerXaaS/blob/master/docs/http-server-commands.md)
+Each modification regarding features/endpoints are immediate and doesn't need server restart. It will be applied to next request received but in order to avoid any troubles, you can quiesce the server. 
 
 
 ### Feature flag
