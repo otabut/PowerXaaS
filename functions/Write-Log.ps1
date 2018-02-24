@@ -34,7 +34,16 @@ Function Write-Log
   if ($Global:LogFile)
   {
     Add-Content $Global:Logfile $Message
-    if ((Get-Item $Global:Logfile).length -gt 2mb)
+    try
+    {
+      $LogSize = (Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name LogSize).LogSize
+    }
+    catch
+    {
+      $LogSize = "2"
+    }
+
+    if ((Get-Item $Global:Logfile).length -gt (iex "$LogSize`Mb"))
     {
       $Parent = "$(Split-Path $Global:Logfile -Parent)\logs"
       $Leaf = "$(Split-Path $Global:Logfile -Leaf)".split('.')[0]
