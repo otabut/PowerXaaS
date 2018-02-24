@@ -10,7 +10,7 @@ try
     "/version"
     {
       $result = [PSCustomObject]@{
-        ReturnCode = 200
+        ReturnCode = [Int][System.Net.HttpStatusCode]::OK
         Content = "Version 1.0.0"
       }
     }
@@ -20,14 +20,14 @@ try
       if ([string]::IsNullOrEmpty($inputs.Body) -or [string]::IsNullOrEmpty($inputs.Body.text))
       {
         $result = [PSCustomObject]@{
-          ReturnCode = 400
+          ReturnCode = [Int][System.Net.HttpStatusCode]::BadRequest
           Content = "null or empty body"
         }
       }
       else
       {
         $result = [PSCustomObject]@{
-          ReturnCode = 200
+          ReturnCode = [Int][System.Net.HttpStatusCode]::OK
           Content = $inputs.Body.text
         }
       }
@@ -40,15 +40,15 @@ try
         $numbers = $inputs.Parameters.op.split('+')
         $add = [int]$numbers[0] + [int]$numbers[1]
         $result = [PSCustomObject]@{
-          ReturnCode = 200
+          ReturnCode = [Int][System.Net.HttpStatusCode]::OK
           Content = "$add"
         }
       }
       else
       {
         $result = [PSCustomObject]@{
-          ReturnCode = 400
-          Content = "not an addition"
+          ReturnCode = [Int][System.Net.HttpStatusCode]::BadRequest
+          Content = "Not an addition"
         }
       }
     }
@@ -64,8 +64,8 @@ try
     default
     {
       $result = [PSCustomObject]@{
-        ReturnCode = 404
-        Content = "this endpoint is not managed by this API version"
+        ReturnCode = [Int][System.Net.HttpStatusCode]::NotFound
+        Content = "This endpoint is not managed by this API version"
       }
     }
   }
@@ -73,7 +73,7 @@ try
 catch
 {
   $result = [PSCustomObject]@{
-    ReturnCode = 500
+    ReturnCode = [Int][System.Net.HttpStatusCode]::InternalServerError
     Content = "Error while processing"
   }
 }
