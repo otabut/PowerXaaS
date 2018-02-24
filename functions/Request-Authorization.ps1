@@ -1,4 +1,4 @@
-Function Request-PXAuthorization
+Function Request-Authorization
 {
   param (
     [Parameter(Mandatory=$true)]$Token,
@@ -13,16 +13,23 @@ Function Request-PXAuthorization
     if ([datetime]$Claims."expiration-date" -gt (Get-Date))
     {
       #do something with $Claims.username, $Feature, $Endpoint, $Method
-      return $true
+      if ($Claims.username -eq 'JohnDoe')
+      {
+        return "Granted"
+      }
+      else
+      {
+        return "Denied"
+      }
     }
     else
     {
-      return $false
+      return "Expired"
     }
   }
   catch
   {
-    return $false
+    return "Error"
   }
 }
 
