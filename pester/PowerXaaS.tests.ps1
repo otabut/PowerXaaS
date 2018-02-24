@@ -22,6 +22,51 @@ add-type @"
 
 Describe "Validate PowerXaaS module" {
 
+  Context "'Setup'" {
+
+    It "Status" {
+
+      & "$PSScriptRoot\..\PowerXaaS.ps1" -Remove | out-null
+      $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Status
+      $result | should be "Not installed"
+    }
+    
+    It "Setup" {
+
+      & "$PSScriptRoot\..\PowerXaaS.ps1" -Setup -Ip $ip -Port $port | Out-Null
+      $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Status
+      $result | should be "Stopped"
+    }
+
+    It "Version" {
+
+      $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Version
+      $result | should be "1.2.0"
+    }
+
+    It "Start" {
+
+      & "$PSScriptRoot\..\PowerXaaS.ps1" -Start | Out-Null
+      $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Status
+      $result | should match "Running"
+    }
+
+    It "Stop" {
+
+      & "$PSScriptRoot\..\PowerXaaS.ps1" -Stop | Out-Null
+      $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Status
+      $result | should be "Stopped"
+    }
+
+    It "Remove" {
+
+      & "$PSScriptRoot\..\PowerXaaS.ps1" -Remove | out-null
+      $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Status
+      $result | should be "Not installed"
+      & "$PSScriptRoot\..\PowerXaaS.ps1" -Setup -Ip $ip -Port $port -Start | Out-Null
+    }
+  }
+  
   Context "'Functionnal unitary testing'" {
 
     It "Connect" {
@@ -78,7 +123,7 @@ Describe "Validate PowerXaaS module" {
         $StatusCode = $_.Exception.Response.StatusCode.Value__
         $StatusMessage = $_.ErrorDetails.Message
       }
-      $StatusCode | Should be 404
+      $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::NotFound)
     }
      
     It "unmanaged endpoint" {
@@ -92,7 +137,7 @@ Describe "Validate PowerXaaS module" {
         $StatusCode = $_.Exception.Response.StatusCode.Value__
         $StatusMessage = $_.ErrorDetails.Message
       }
-      $StatusCode | Should be 404
+      $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::NotFound)
     }
 
     It "malformatted JSON" {
@@ -107,7 +152,7 @@ Describe "Validate PowerXaaS module" {
         $StatusCode = $_.Exception.Response.StatusCode.Value__
         $StatusMessage = $_.ErrorDetails.Message
       }
-      $StatusCode | Should be 400
+      $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::BadRequest)
     }
 
     It "POST without body" {
@@ -121,7 +166,7 @@ Describe "Validate PowerXaaS module" {
         $StatusCode = $_.Exception.Response.StatusCode.Value__
         $StatusMessage = $_.ErrorDetails.Message
       }
-      $StatusCode | Should be 400
+      $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::BadRequest)
     }
 
     It "Invalid return code" {
@@ -135,7 +180,7 @@ Describe "Validate PowerXaaS module" {
         $StatusCode = $_.Exception.Response.StatusCode.Value__
         $StatusMessage = $_.ErrorDetails.Message
       }
-      $StatusCode | Should be 500
+      $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::InternalServerError)
     }
 
     BeforeEach {
@@ -165,10 +210,10 @@ Describe "Validate PowerXaaS module" {
         $StatusCode = $_.Exception.Response.StatusCode.Value__
         $StatusMessage = $_.ErrorDetails.Message
       }
-      $StatusCode | Should be 401
+      $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::Unauthorized)
     }
 
-    It "Authorization denied" {
+    It "Not authenticated" {
 
       try
       {
@@ -179,13 +224,36 @@ Describe "Validate PowerXaaS module" {
         $StatusCode = $_.Exception.Response.StatusCode.Value__
         $StatusMessage = $_.ErrorDetails.Message
       }
-      $StatusCode | Should be 403
+      $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::Unauthorized)
+    }
+
+    It "Authorization denied" {
+
+      try
+      {
+        $json = '{"Username":"DexterMorgan","password":"SliceOfLife"}'
+        $Result = (invoke-webrequest -Uri "$BaseUrl/api/v1/connect" -Method POST -Body $json).content | ConvertFrom-Json
+        $Token = $Result.token
+        $Headers = @{"Authorization" = "Bearer " + $Token}
+        invoke-webrequest -Uri "$BaseUrl/api/v1/version" -Method GET -Headers $Headers
+      }
+      catch
+      {
+        $StatusCode = $_.Exception.Response.StatusCode.Value__
+        $StatusMessage = $_.ErrorDetails.Message
+      }
+      $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::Forbidden)
     }
   }
 
   Context "'Load testing'" {
 
     It "start $Load calls" {
+
+      $json = '{"username":"JohnDoe","password":"blabla"}'
+      $Result = (invoke-webrequest -Uri "$BaseUrl/api/v1/connect" -Method POST -Body $json).content | ConvertFrom-Json
+      $Token = $Result.token
+      $Headers = @{"Authorization" = "Bearer " + $Token}
 
       $nbSuccess = 0
       $i = 0
@@ -198,7 +266,7 @@ Describe "Validate PowerXaaS module" {
           1 { $json='{"text":"My own text"}'; $result=invoke-webrequest -Uri "$BaseUrl/api/v1/echo" -Method POST -Headers $Headers -Body $json }
           2 { $result=invoke-webrequest -Uri "$BaseUrl/api/v1/addition/3+4" -Method GET -Headers $Headers }
         }
-        if (($result.StatusCode -eq 200) -or ($result.StatusCode -eq 201))
+        if (($result.StatusCode -eq [Int][System.Net.HttpStatusCode]::OK) -or ($result.StatusCode -eq [Int][System.Net.HttpStatusCode]::Created))
         {
           $nbSuccess++
         }
@@ -207,18 +275,8 @@ Describe "Validate PowerXaaS module" {
       until ($i -eq $Load)
 
       $nbSuccess | should be $Load
-    }
-    
-    BeforeEach {
-      
-      $json = '{"Username":"JohnDoe","password":"blabla"}'
-      $Result = (invoke-webrequest -Uri "$BaseUrl/api/v1/connect" -Method POST -Body $json).content | ConvertFrom-Json
-      $Token = $Result.token
-      $Headers = @{"Authorization" = "Bearer " + $Token}
-    }
 
-    AfterEach {
-      
+      & "$PSScriptRoot\..\PowerXaaS.ps1" -Remove | Out-Null
     }
   }
 }
