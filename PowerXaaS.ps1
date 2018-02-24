@@ -51,11 +51,7 @@
     Stop then restart the service
 
   .PARAMETER Quiesce
-    Quiesce transactions for a given delay
-
-  .PARAMETER Delay
-    Mandatory
-    Delay in seconds
+    Quiesce transactions for given delay in seconds
 
   .PARAMETER Remove
     Uninstall the service
@@ -120,8 +116,7 @@ Param(
   [Parameter(ParameterSetName='Stop',Mandatory=$true)][Switch]$Stop,                                                    # Stop the service
   [Parameter(ParameterSetName='Restart',Mandatory=$true)][Switch]$Restart,                                              # Restart the service
   [Parameter(ParameterSetName='Remove',Mandatory=$true)][Switch]$Remove,                                                # Uninstall the service
-  [Parameter(ParameterSetName='Quiesce',Mandatory=$true)][Switch]$Quiesce,                                              # Quiesce
-  [Parameter(ParameterSetName='Quiesce',Mandatory=$true)][int]$Delay,                                                   # Delay
+  [Parameter(ParameterSetName='Quiesce',Mandatory=$true)][int]$Quiesce,                                              # Quiesce
   [Parameter(ParameterSetName='Service',Mandatory=$true)][Switch]$Service,                                              # Run the service (Internal use only)
   [Parameter(ParameterSetName='Service',Mandatory=$false)][Switch]$Console,                                             # Displays log in console (Internal use only)
   [Parameter(ParameterSetName='SCMStart',Mandatory=$true)][Switch]$SCMStart,                                            # Process SCM Start requests (Internal use only)
@@ -359,8 +354,9 @@ if ($Restart)          # Restart the service
 
 if ($Quiesce)          # Quiesce
 {
-  Write-Log -Status "Information" -Context "Quiesce" -Description "Quiesce for $delay seconds has been required"
-  "" > "$InstallDir\pause.$delay"
+  Write-Log -Status "Information" -Context "Quiesce" -Description "Quiesce for $Quiesce seconds has been required"
+  Write-EventLog -LogName $LogName -Source $ServiceName -EventId 1003 -EntryType Information -Message "Quiesce: Sending pause message to the event queue"
+  Send-PipeMessage $pipeName "pause.$Quiesce"
   return
 }
 
@@ -395,7 +391,7 @@ if ($Status)           # Get the current service status
 
 if ($Service)          # Run the service as a background job
 {
-  Write-Log -Status "Information" -Context "Start" -Description $MyInvocation.Line   # The exact command line that was used to start us
+  Write-Log -Status "Information" -Context "Service" -Description $MyInvocation.Line   # The exact command line that was used to start us
   Write-EventLog -LogName $LogName -Source $ServiceName -EventId 1005 -EntryType Information -Message "Service: Beginning background job"
   try
   {
@@ -419,9 +415,9 @@ if ($Service)          # Run the service as a background job
         if ($Context)
         {
           Write-Log -Status "Information" -Context "Service" -Description "------------------------------------------------"  # Insert one line to separate client request logs
-          Write-Log -Status "Information" -Context "HTTPD" -Description "#### Client request has been received ####"
+          Write-Log -Status "Information" -Context "HTTPD" -Description "#### Client request $RequestID has been received ####"
           Receive-Request -RequestId $RequestID -Context $Context
-          Write-Log -Status "Information" -Context "HTTPD" -Description "#### Client response has been sent ####"
+          Write-Log -Status "Information" -Context "HTTPD" -Description "#### Client response $RequestID has been sent ####"
           $RequestID++
           $Context = $null
           $Task = $Listener.GetContextAsync()  # Listen (Async)
@@ -464,6 +460,13 @@ if ($Service)          # Run the service as a background job
                   {
                     $Message = Receive-PipeHandlerThread $pipeThread
                     Write-Log -Status "Information" -Context "Service" -Description "Received control message: $Message"
+                    if ($Message -match "Pause")
+                    {
+                      $Delay = $Message.split('.')[1]
+                      Write-Log -Status "Warning" -Context "HTTPD" -Description "Server has been paused for $delay seconds"
+                      Start-Sleep -Seconds $Delay
+                      Write-Log -Status "Warning" -Context "HTTPD" -Description "Server has resumed"
+                    }
                     if ($Message -ne "exit")
                     {
                       $pipeThread = Start-PipeHandlerThread $pipeName -Event "ControlMessage"  # Start another thread waiting for control messages
