@@ -54,6 +54,7 @@ Describe "Validate PowerXaaS module" {
     It "Stop" {
 
       & "$PSScriptRoot\..\PowerXaaS.ps1" -Stop | Out-Null
+      start-sleep 1
       $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Status
       $result | should be "Stopped"
     }
