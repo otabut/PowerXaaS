@@ -26,10 +26,10 @@ Just run `.\PowerXaaS.ps1 -Setup -Ip <ipaddress> -Port <port> [-Start] [-CustomL
 #### Start
 Then, start service or run `.\PowerXaaS.ps1 -Start`
 
-#### Pause
+#### Quiesce
 Sometimes, if you need to modify the configuration without downtime, you may choose to quiesce incoming requests in order to avoid side effects.
 
-In order to do that, just run `.\PowerXaaS.ps1 -Pause <delay>` where `<delay>` is a number in seconds.
+In order to do that, just run `.\PowerXaaS.ps1 -Quiesce <delay>` where `<delay>` is a number in seconds.
 
 Server will still communicate with clients, so it will be transparent for them, unless they set a timeout shorter than the paused delay, but generally clients don't set a timeout value.
 
