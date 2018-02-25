@@ -24,7 +24,16 @@ This will allow to manage several versions of your API "side-by-side", so that y
 
 With PowerXaaS, the web schema that describe features and endpoints is stored in a configuration file : PowerXaaS.conf. The format of the file is JSON. 
 
-You should not edit the configuration file directly : the Powershell module contains cmdlets to perform all the actions you may need.
+You should not edit the configuration file directly. The Powershell module contains cmdlets to perform all the actions you may need :
+
+    Get-PXFeature
+    New-PXFeature
+    Enable-PXFeature
+    Disable-PXFeature
+    Remove-PXFeature
+    Get-PXEndpoint
+    Set-PXEndpoint
+    Remove-PXEndpoint
 
 
 ### Auto-refresh
