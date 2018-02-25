@@ -52,7 +52,7 @@ Function Receive-Request
   {
     #Read config and get action
     Write-Log -Status "Information" -Context "Process $RequestId" -Description "Ready to process request"
-    $Endpoint = ($Request.url.localpath.substring(1) -replace 'api/v.','')
+    $Endpoint = ($Request.url.localpath.substring(1) -replace 'api/v\d*','')
     $Method = $Request.httpmethod
     Write-Log -Status "Information" -Context "Process $RequestId" -Description "Reading configuration file"
     $Config = Get-Content .\PowerXaaS.conf | ConvertFrom-Json
@@ -90,7 +90,7 @@ Function Receive-Request
           $Script = "$Folder\$Feature.ps1"
           $Parameters.PSObject.Properties.Remove('0')
           $Inputs = [PSCustomObject]@{
-            URL = $($Request.url.localpath.substring(1) -replace 'api/v.','')
+            URL = $($Request.url.localpath.substring(1) -replace 'api/v\d*','')
             Method = $($Request.httpmethod)
             Body = $Body
             Parameters = $Parameters
