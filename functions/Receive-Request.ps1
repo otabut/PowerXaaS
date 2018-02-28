@@ -168,6 +168,10 @@ Function Receive-Request
   {
     Write-Log -Status "Information" -Context "Process $RequestId" -Description "Content is $($Result.Content)"
     $Buffer = [Text.Encoding]::UTF8.GetBytes($Result.Content)
+    $Response.AddHeader("Access-Control-Allow-Origin","*")
+    $Response.AddHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE")
+    $Response.AddHeader("Access-Control-Allow-Headers","X-Requested-With")
+    $Response.AddHeader("Access-Control-Max-Age","86400")
     $Response.ContentType = 'application/json'
     $Response.ContentLength64 = $Buffer.length
     $Response.OutputStream.Write($Buffer, 0, $Buffer.length)
