@@ -3,7 +3,7 @@
 
 The following command must be executed if you want to use the real IP address of your server instead of localhost :
 
-    netsh http add urlacl url='http://<ipaddress>:<port>/' user=everyone sddl='D:(A;;GA;;;WD)'
+    netsh http add urlacl url='https://<ipaddress>:<port>/' user=everyone sddl='D:(A;;GA;;;WD)'
     netsh http show urlacl
   
 
