@@ -142,11 +142,23 @@ Function Receive-Request
     }
     else
     {
-      #Endpoint not found
-      Write-Log -Status "Error" -Context "Process $RequestId" -Description "Endpoint not found"
-      $Result = [PSCustomObject]@{
-        ReturnCode = [Int][System.Net.HttpStatusCode]::NotFound
-        Content = "Endpoint not found"
+      if ($Method -eq 'OPTIONS')
+      {
+        #OPTIONS REQUEST for Swagger support (CORS)
+        Write-Log -Status "Information" -Context "Process $RequestId" -Description "Support for OPTIONS request (eg: Swagger)"
+        $Result = [PSCustomObject]@{
+          ReturnCode = [Int][System.Net.HttpStatusCode]::OK
+          Content = ""
+        }
+      }
+      else
+      {
+        #Endpoint not found
+        Write-Log -Status "Error" -Context "Process $RequestId" -Description "Endpoint not found"
+        $Result = [PSCustomObject]@{
+          ReturnCode = [Int][System.Net.HttpStatusCode]::NotFound
+          Content = "Endpoint not found"
+        }
       }
     }
   }
@@ -164,15 +176,15 @@ Function Receive-Request
   ### SEND RESPONSE ###    
   Write-Log -Status "Information" -Context "Process $RequestId" -Description "Return code is $($Result.ReturnCode)"
   $Response.statuscode = $Result.ReturnCode
+  $Response.ContentType = 'application/json'  #$Result.ContentType
+  $Response.AddHeader("Access-Control-Allow-Origin","*")
+  $Response.AddHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,PATCH,OPTIONS")
+  $Response.AddHeader("Access-Control-Allow-Headers","accept,authorization,content-type")
+  $Response.AddHeader("Access-Control-Max-Age","86400")
   if ($Result.Content)
   {
     Write-Log -Status "Information" -Context "Process $RequestId" -Description "Content is $($Result.Content)"
     $Buffer = [Text.Encoding]::UTF8.GetBytes($Result.Content)
-    $Response.AddHeader("Access-Control-Allow-Origin","*")
-    $Response.AddHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE")
-    $Response.AddHeader("Access-Control-Allow-Headers","X-Requested-With")
-    $Response.AddHeader("Access-Control-Max-Age","86400")
-    $Response.ContentType = 'application/json'
     $Response.ContentLength64 = $Buffer.length
     $Response.OutputStream.Write($Buffer, 0, $Buffer.length)
   }
