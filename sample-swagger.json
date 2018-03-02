@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "description": "his is a sample PowerXaaS server.",
-    "version": "1.0.8",
+    "description": "This is a sample PowerXaaS server.",
+    "version": "1.0.0",
     "title": "Swagger PowerXaaS",
   },
   "schemes": ["https"],
@@ -14,8 +14,8 @@
         "tags": [
           "Connect"
         ],
-        "summary": "Get token",
-        "description": "Get token for future authentication",
+        "summary": "Authenticate and get token",
+        "description": "Authenticate and get token for use with other endpoints",
         "produces": [
           "application/json"
         ],
@@ -111,8 +111,8 @@
         "tags": [
           "Echo"
         ],
-        "summary": "Echo sent text",
-        "description": "Echo text that has been sent in request body",
+        "summary": "Echo text",
+        "description": "Returns text just sent as parameter in request body",
         "produces": [
           "text/plain"
         ],
@@ -158,8 +158,8 @@
         "tags": [
           "Addition"
         ],
-        "summary": "Performs addition operation",
-        "description": "Performs addition operation with parameters sent in url",
+        "summary": "Performs basic addition",
+        "description": "Performs basic addition with parameters sent in url",
         "produces": [
           "text/plain"
         ],
