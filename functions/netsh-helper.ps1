@@ -89,19 +89,26 @@ function Register-SSLCertificate
   {
     if (-not (Test-IsAdministrator))
     {
-      Write-Error -Message  "Elevated privileges required." -ErrorAction Stop
+      Write-Error -Message  "Elevated privileges required" -ErrorAction Stop
     }
   }
 
   process
   {
     $guid = ([guid]::NewGuid()).guid
-    #$CertHash = (New-SelfSignedCertificate -DnsName <yourdnsname> -CertStoreLocation Cert:\LocalMachine\My).thumbprint
-    #Add-NetIPHttpsCertBinding -IpPort $IpPort -CertificateHash $Certhash -CertificateStoreName "My" -ApplicationId "{$guid}" -NullEncryption $false
-    $netsh_cmd = 'netsh http add sslcert ipport="$IpPort" certhash="$CertHash" appid="{$guid}"'
-
-    Write-Verbose "Registering SSL certificate using $netsh_cmd"
-    $result = Invoke-Expression -Command "$netsh_cmd"
+    
+    if (Get-ChildItem -path cert:\LocalMachine -recurse | where {$_.Thumbprint -eq $CertHash})
+    {
+      #$CertHash = (New-SelfSignedCertificate -DnsName <yourdnsname> -CertStoreLocation Cert:\LocalMachine\My).thumbprint
+      #Add-NetIPHttpsCertBinding -IpPort $IpPort -CertificateHash $Certhash -CertificateStoreName "My" -ApplicationId "{$guid}" -NullEncryption $false
+      $netsh_cmd = 'netsh http add sslcert ipport="$IpPort" certhash="$CertHash" appid="{$guid}"'
+      Write-Verbose "Registering SSL certificate using $netsh_cmd"
+      $result = Invoke-Expression -Command "$netsh_cmd"
+    }
+    else
+    {
+      Write-Error -Message  "Unable to find certificate" -ErrorAction Stop
+    }
 
     $result -match 'SSL certificate successfully added'
   }
