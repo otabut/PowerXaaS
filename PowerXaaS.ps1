@@ -165,6 +165,7 @@ $Global:CustomLogging = $CustomLogging
 
 ### LOAD FUNCTIONS ###
 . $PSScriptRoot\functions\PowerXaaS-helper.ps1                    # Call helper script which contains thread management functions
+. $PSScriptRoot\functions\netsh-helper.ps1                        # Call helper script which contains netsh related functions
 . $PSScriptRoot\functions\Write-Log.ps1                           # Call logging function
 . $PSScriptRoot\functions\Start-CustomLogging.ps1                 # Call custom logging function
 . $PSScriptRoot\functions\Receive-Request.ps1                     # Call main function
