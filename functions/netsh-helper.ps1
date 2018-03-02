@@ -61,7 +61,6 @@ function Get-SSLCertificate
 }
 
 
-
 function Register-SSLCertificate
 {
 <#
@@ -109,7 +108,6 @@ function Register-SSLCertificate
 
   end {}
 }
-
 
 
 function Get-URLPrefix
@@ -171,7 +169,6 @@ function Get-URLPrefix
 }
 
 
-
 function Register-URLPrefix
 {
 <#
@@ -198,7 +195,8 @@ function Register-URLPrefix
 
   begin
   {
-    if (-not (Test-IsAdministrator))
+    $user = [Security.Principal.WindowsIdentity]::GetCurrent()
+    if (-not ((New-Object Security.Principal.WindowsPrincipal $User).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)))
     {
       Write-Error -Message  "Elevated privileges required." -ErrorAction Stop
     }
@@ -210,85 +208,6 @@ function Register-URLPrefix
     Write-Verbose "Registering URL prefix using $netsh_cmd"
     $result = Invoke-Expression -Command $netsh_cmd
     $result -match 'URL reservation successfully added'
-  }
-
-  end {}
-}
-
-
-
-function Test-URLPrefix
-{
-<#
-  .SYNOPSIS
-      Tests whether a given prefix and user exist
-  .DESCRIPTION
-      Tests whether a prefix and user exist
-  .PARAMETER Prefix
-      The prefix to test
-  .PARAMETER Username
-      The username to test
-  .INPUTS
-      None
-  .OUTPUTS
-      Boolean
-#>
-
-  [CmdletBinding()]
-
-  param(
-    [Parameter(Mandatory=$true)][String]$Prefix,
-    [Parameter()][String]$Username = (Get-CurrentUserName)
-  )
-
-  begin {}
-
-  process
-  {
-    $url_prefix = Get-URLPrefix | Where-Object {$_.url -eq $Prefix}
-
-    if (-not $url_prefix)
-    {
-      $false
-    }
-    elseif ($url_prefix.User -ne $Username)
-    {
-      $false
-    }
-    else
-    {
-      $true
-    }
-  }
-
-  end {}
-}
-
-
-
-function Test-IsAdministrator
-{
-<#
-  .SYNOPSIS
-      Tests whether the user is an admistrator.
-  .DESCRIPTION
-      Tests whether the current user is an administrator
-  .INPUTS
-      None
-  .OUTPUTS
-      Boolean
-#>
-
-  [CmdletBinding()]
-
-  param()
-
-  begin {}
-
-  process
-  {
-    $user = [Security.Principal.WindowsIdentity]::GetCurrent()
-    (New-Object Security.Principal.WindowsPrincipal $User).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
   }
 
   end {}
