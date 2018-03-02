@@ -205,7 +205,7 @@ function Register-URLPrefix
     $user = [Security.Principal.WindowsIdentity]::GetCurrent()
     if (-not ((New-Object Security.Principal.WindowsPrincipal $User).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)))
     {
-      Write-Error -Message  "Elevated privileges required." -ErrorAction Stop
+      Write-Error -Message  "Elevated privileges required" -ErrorAction Stop
     }
   }
 
