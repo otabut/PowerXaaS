@@ -1,0 +1,202 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "his is a sample PowerXaaS server.",
+    "version": "1.0.8",
+    "title": "Swagger PowerXaaS",
+  },
+  "schemes": ["https"],
+  "host":"wnpardhco0020:8087",
+  "basePath":"/api/v1",
+  "paths": {
+    "/connect": {
+      "post": {
+        "tags": [
+          "Connect"
+        ],
+        "summary": "Get token",
+        "description": "Get token for future authentication",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Username",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "username": { 
+                  "description": "username",
+                  "type": "string"
+                },
+                "password": {
+                  "description": "password",
+                  "type": "string"
+                }
+              }
+            }
+          }  
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": 
+            {
+              "application/json":{
+                "examples":{
+                  "summary":"summary",
+                  "value":{
+                    "foo":"bar"
+                  }
+                  
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized"
+          },
+          "404": {
+            "description": "not found"
+          },
+          "500": {
+            "description": "internal error"
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "tags": [
+          "Version"
+        ],
+        "summary": "Get API version",
+        "description": "Get API version",
+         "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "description": "bearer",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "401": {
+            "description": "unauthorized"
+          },
+          "403": {
+            "description": "forbidden"
+          },
+          "404": {
+            "description": "not found"
+          },
+          "500": {
+            "description": "internal error"
+          }
+        }
+      }
+    },
+    "/echo": {
+      "post": {
+        "tags": [
+          "Echo"
+        ],
+        "summary": "Echo sent text",
+        "description": "Echo text that has been sent in request body",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "body",
+            "description": "Text to display",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "text": { 
+                  "description": "Text to display",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "description": "bearer",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "404": {
+            "description": "not found"
+          },
+          "500": {
+            "description": "internal error"
+          }
+        }
+      }
+    },
+    "/addition/{op}": {
+      "get": {
+        "tags": [
+          "Addition"
+        ],
+        "summary": "Performs addition operation",
+        "description": "Performs addition operation with parameters sent in url",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "description": "bearer",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "op",
+            "in": "path",
+            "description": "Addition operation to perform",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "401": {
+            "description": "unauthorized"
+          },
+          "403": {
+            "description": "forbidden"
+          },
+          "404": {
+            "description": "not found"
+          },
+          "500": {
+            "description": "internal error"
+          }
+        }
+      }
+    }
+  }
+}
