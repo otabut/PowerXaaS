@@ -127,7 +127,9 @@ function Get-URLPrefix
 
   [CmdletBinding()]
 
-  param()
+  param(
+    [Parameter(Mandatory=$false)][String]$Filter
+  )
 
   begin {}
 
@@ -136,6 +138,7 @@ function Get-URLPrefix
     $netsh_cmd = "netsh http show urlacl"
     $result = Invoke-Expression -Command $netsh_cmd
 
+    $info = @()
     ForEach ($Line in $result)
     {
       if ($Line -match 'Reserved URL\s+\: (?<url>.*)')
@@ -145,12 +148,23 @@ function Get-URLPrefix
       elseif ($Line -match 'User\: (?<user>.*)')
       {
         $user = $matches.user
-        New-Object -TypeName PSObject -Property @{
+
+        $info += [PSCustomObject]@{
           'URL' = $url.Trim()
           'User' = $user.Trim()
         }
       }
     }
+
+    if ($Filter)
+    {
+      $Info | Where-Object {$_.url -match $Filter}
+    }
+    else
+    {
+      $Info
+    }
+
   }
 
   end {}
