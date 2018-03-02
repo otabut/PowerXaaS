@@ -142,7 +142,7 @@ function Get-URLPrefix
       {
         $url = $matches.url
       }
-      elseif ($_ -match 'User\: (?<user>.*)')
+      elseif ($Line -match 'User\: (?<user>.*)')
       {
         $user = $matches.user
         New-Object -TypeName PSObject -Property @{
