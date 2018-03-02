@@ -2,7 +2,7 @@ Function Get-PXEndpoint
 {
   param (
     [Parameter(Mandatory=$false)]$Feature,
-    [Parameter(Mandatory=$false)][ValidateSet("GET","POST","PUT","DELETE")]$Method,
+    [Parameter(Mandatory=$false)][ValidateSet("GET","POST","PUT","PATCH","DELETE")]$Method,
     [Parameter(Mandatory=$false)]$Url,
     [Parameter(Mandatory=$false)][switch]$Active
   )
