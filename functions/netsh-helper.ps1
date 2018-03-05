@@ -87,8 +87,8 @@ function Register-SSLCertificate
 
   begin
   {
-    $user = [Security.Principal.WindowsIdentity]::GetCurrent()
-    if (-not ((New-Object Security.Principal.WindowsPrincipal $User).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)))
+    $CurrentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+    if (-not ((New-Object Security.Principal.WindowsPrincipal $CurrentUser).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)))
     {
       Write-Error -Message "Elevated privileges required" -ErrorAction Stop
     }
@@ -204,13 +204,13 @@ function Register-URLPrefix
 
   param(
     [Parameter(Mandatory=$true)][String]$Prefix,
-    [Parameter()][String]$User=(Get-CurrentUserName)
+    [Parameter(Mandatory=$false)][String]$User="Everyone"
   )
 
   begin
   {
-    $user = [Security.Principal.WindowsIdentity]::GetCurrent()
-    if (-not ((New-Object Security.Principal.WindowsPrincipal $User).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)))
+    $CurrentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+    if (-not ((New-Object Security.Principal.WindowsPrincipal $CurrentUser).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)))
     {
       Write-Error -Message "Elevated privileges required" -ErrorAction Stop
     }
