@@ -66,6 +66,7 @@ Describe "Validate PowerXaaS module" {
       $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Status
       $result | should be "Not installed"
       & "$PSScriptRoot\..\PowerXaaS.ps1" -Setup -Ip $ip -Port $port -Start | Out-Null
+      start-sleep 2
     }
   }
   
