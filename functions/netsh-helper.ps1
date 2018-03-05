@@ -89,7 +89,7 @@ function Register-SSLCertificate
   {
     if (-not (Test-IsAdministrator))
     {
-      Write-Error -Message  "Elevated privileges required" -ErrorAction Stop
+      Write-Error -Message "Elevated privileges required" -ErrorAction Stop
     }
   }
 
@@ -107,7 +107,7 @@ function Register-SSLCertificate
     }
     else
     {
-      Write-Error -Message  "Unable to find certificate" -ErrorAction Stop
+      Write-Error -Message "Unable to find certificate" -ErrorAction Stop
     }
 
     $result -match 'SSL certificate successfully added'
@@ -205,7 +205,7 @@ function Register-URLPrefix
     $user = [Security.Principal.WindowsIdentity]::GetCurrent()
     if (-not ((New-Object Security.Principal.WindowsPrincipal $User).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)))
     {
-      Write-Error -Message  "Elevated privileges required" -ErrorAction Stop
+      Write-Error -Message "Elevated privileges required" -ErrorAction Stop
     }
   }
 
