@@ -310,4 +310,3 @@ function Unregister-URLPrefix
 
   end {}
 }
-a
