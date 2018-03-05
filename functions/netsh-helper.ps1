@@ -157,7 +157,7 @@ function Unregister-SSLCertificate
   process
   {
     $netsh_cmd = 'netsh http delete sslcert ipport="$IpPort"'
-    Write-Verbose "Registering SSL certificate using $netsh_cmd"
+    Write-Verbose "Unregistering SSL certificate using $netsh_cmd"
     $result = Invoke-Expression -Command "$netsh_cmd"
     $result -match 'SSL certificate successfully deleted'
   }
