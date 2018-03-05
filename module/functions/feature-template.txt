@@ -1,0 +1,91 @@
+param (
+  [Parameter(Mandatory=$true)]$inputs
+)
+
+$ErrorActionPreference = 'stop'
+try
+{
+  ### PARAMETERS AVAILABLE ###
+  $inputs.url
+  $inputs.body
+  $inputs.method
+  $inputs.parameters
+
+  switch -regex ($inputs.url)
+  {
+    "/<endpoint>"       ### YOUR ENDPOINT HERE  ###
+    #"/<endpoint>/*"    ### YOUR ENDPOINT HERE WITH PARAMETERS IN URL  ###
+    {
+      switch ($inputs.method)
+      {
+        "GET"
+        {
+          ### IF UNEXPECTED PARAMETERS VALUES ###
+          $result = [PSCustomObject]@{
+            ReturnCode = [Int][System.Net.HttpStatusCode]::BadRequest
+            Content = "<null or empty body>"
+            ContentType = "text/plain"
+          }
+
+          ### IN CASE OF SUCCESS ###
+          $result = [PSCustomObject]@{
+            ReturnCode = [Int][System.Net.HttpStatusCode]::OK
+            Content = "<content>"   ### YOUR CONTENT HERE ###
+            ContentType = "<content-type>"   ### YOUR CONTENT TYPE HERE ###
+          }
+
+          ### IN CASE OF FAILURE ###
+          $result = [PSCustomObject]@{
+            ReturnCode = [Int][System.Net.HttpStatusCode]::InternalServerError
+            Content = "Error while processing"
+            ContentType = "text/plain"
+          }
+        }
+        
+        "PUT"
+        {
+        }
+
+        "POST"
+        {
+        }
+
+        "PATCH"
+        {
+        }
+
+        "DELETE"
+        {
+        }
+
+        default  # Should not happen
+        {
+          $result = [PSCustomObject]@{
+            ReturnCode = [Int][System.Net.HttpStatusCode]::NotFound
+            Content = "This endpoint is not managed by this API version"
+            ContentType = "text/plain"
+          }
+        }
+      }
+    }
+
+    default  # Should not happen
+    {
+      $result = [PSCustomObject]@{
+        ReturnCode = [Int][System.Net.HttpStatusCode]::NotFound
+        Content = "This endpoint is not managed by this API version"
+        ContentType = "text/plain"
+      }
+    }
+  }
+}
+catch
+{
+  $result = [PSCustomObject]@{
+    ReturnCode = [Int][System.Net.HttpStatusCode]::InternalServerError
+    Content = "Error while processing"
+    ContentType = "text/plain"
+  }
+}
+
+return $result

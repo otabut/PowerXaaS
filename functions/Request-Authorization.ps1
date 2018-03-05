@@ -29,7 +29,7 @@ Function Request-Authorization
   }
   catch
   {
-    return "Error"
+    return "NotAuthenticated"
   }
 }
 

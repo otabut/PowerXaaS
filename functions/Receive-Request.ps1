@@ -46,6 +46,7 @@ Function Receive-Request
     $Result = [PSCustomObject]@{
       ReturnCode = [Int][System.Net.HttpStatusCode]::BadRequest
       Content = "Provided body is not a valid JSON file"
+      ContentType = "text/plain"
     }
   }
   else
@@ -108,6 +109,7 @@ Function Receive-Request
             $Result = [PSCustomObject]@{
               ReturnCode = [Int][System.Net.HttpStatusCode]::InternalServerError
               Content = "Error while processing $Script"
+              ContentType = "text/plain"
             }
           }
         }
@@ -117,6 +119,7 @@ Function Receive-Request
           $Result = [PSCustomObject]@{
             ReturnCode = [Int][System.Net.HttpStatusCode]::Forbidden
             Content = 'Authorization denied'
+            ContentType = "text/plain"
           }
         }
         "Expired"
@@ -125,6 +128,7 @@ Function Receive-Request
           $Result = [PSCustomObject]@{
             ReturnCode = [Int][System.Net.HttpStatusCode]::Unauthorized
             Content = 'Token expired'
+            ContentType = "text/plain"
           }
         }
         "NotAuthenticated"
@@ -133,6 +137,7 @@ Function Receive-Request
           $Result = [PSCustomObject]@{
             ReturnCode = [Int][System.Net.HttpStatusCode]::Unauthorized
             Content = 'Not authenticated'
+            ContentType = "text/plain"
           }
         }
         default
@@ -142,11 +147,25 @@ Function Receive-Request
     }
     else
     {
-      #Endpoint not found
-      Write-Log -Status "Error" -Context "Process $RequestId" -Description "Endpoint not found"
-      $Result = [PSCustomObject]@{
-        ReturnCode = [Int][System.Net.HttpStatusCode]::NotFound
-        Content = "Endpoint not found"
+      if ($Method -eq 'OPTIONS')
+      {
+        #OPTIONS REQUEST for Swagger support (CORS)
+        Write-Log -Status "Information" -Context "Process $RequestId" -Description "Support for OPTIONS request (eg: Swagger)"
+        $Result = [PSCustomObject]@{
+          ReturnCode = [Int][System.Net.HttpStatusCode]::OK
+          Content = ""
+          ContentType = "text/plain"
+        }
+      }
+      else
+      {
+        #Endpoint not found
+        Write-Log -Status "Error" -Context "Process $RequestId" -Description "Endpoint not found"
+        $Result = [PSCustomObject]@{
+          ReturnCode = [Int][System.Net.HttpStatusCode]::NotFound
+          Content = "Endpoint not found"
+          ContentType = "text/plain"
+        }
       }
     }
   }
@@ -157,22 +176,23 @@ Function Receive-Request
     $Result = [PSCustomObject]@{
       ReturnCode = [Int][System.Net.HttpStatusCode]::InternalServerError
       Content = "Invalid return code"
+      ContentType = "text/plain"
     }
   }
   Write-Log -Status "Information" -Context "Process $RequestId" -Description "Request processed"
 
   ### SEND RESPONSE ###    
   Write-Log -Status "Information" -Context "Process $RequestId" -Description "Return code is $($Result.ReturnCode)"
-  $Response.statuscode = $Result.ReturnCode
+  $Response.StatusCode = $Result.ReturnCode
+  $Response.ContentType = $Result.ContentType
+  $Response.AddHeader("Access-Control-Allow-Origin","*")
+  $Response.AddHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,PATCH,OPTIONS")
+  $Response.AddHeader("Access-Control-Allow-Headers","accept,authorization,content-type")
+  $Response.AddHeader("Access-Control-Max-Age","86400")
   if ($Result.Content)
   {
     Write-Log -Status "Information" -Context "Process $RequestId" -Description "Content is $($Result.Content)"
     $Buffer = [Text.Encoding]::UTF8.GetBytes($Result.Content)
-    $Response.AddHeader("Access-Control-Allow-Origin","*")
-    $Response.AddHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE")
-    $Response.AddHeader("Access-Control-Allow-Headers","X-Requested-With")
-    $Response.AddHeader("Access-Control-Max-Age","86400")
-    $Response.ContentType = 'application/json'
     $Response.ContentLength64 = $Buffer.length
     $Response.OutputStream.Write($Buffer, 0, $Buffer.length)
   }

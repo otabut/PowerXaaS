@@ -1,29 +1,18 @@
 
-### Set URL ACL with netsh
-
-The following command must be executed if you want to use the real IP address of your server instead of localhost :
-
-    netsh http add urlacl url='http://<ipaddress>:<port>/' user=everyone sddl='D:(A;;GA;;;WD)'
-    netsh http show urlacl
-  
-
-### HTTPS setup
-
-Setting up HTTPS on your server will need to execute the following commands (Windows 2012 R2 and up) :
-
-1. Create a GUID for your app : `$guid = ([guid]::NewGuid()).guid`
-2. Create your self-signed certificate and write down the thumbprint : `$certHash = (New-SelfSignedCertificate -DnsName <yourdnsname> -CertStoreLocation Cert:\LocalMachine\My).thumbprint`
-3. Copy that certificate to the CA store
-4. Attach your certificate to your binding : `Add-NetIPHttpsCertBinding -IpPort "<ipaddress>:<port>" -CertificateHash $certhash -CertificateStoreName "My" -ApplicationId "{$guid}" -NullEncryption $false`
-5. Check with `netsh http show sslcert`
-
-
 ### Install PowerXaaS
 
 #### Install
-Just run `.\PowerXaaS.ps1 -Setup -Ip <ipaddress> -Port <port> [-Start] [-CustomLogging]`. You can choose to use custom logging function : write your own code in `Start-CustomLogging.ps1`
+Run `.\PowerXaaS.ps1 -Setup -Ip <ipaddress> -Port <port> [-Protocol <https|http>] [-CertHash <Thumbprint>] [-Start] [-Credential] [-CustomLogging]`.
 
-The setup will copy files into `C:\Program files\PowerXaaS`, install the `PowerXaaS` service, set some registry keys and copy the Powershell module to `C:\Program files\WindowsPowershell\Modules\PowerXaaS`.
+Default protocol is HTTPS.
+
+If you don't give a certificate thumbprint, a self-signed certificate will be used instead.
+
+You can specify alternate credentials for service account. Default is LocalSystem.
+
+You can choose to use custom logging function : write your own code in `Start-CustomLogging.ps1`
+
+The setup will copy files into `C:\Program files\PowerXaaS`, install the `PowerXaaS` service, set some registry keys, configure the HTTP server and copy the Powershell module to `C:\Program files\WindowsPowershell\Modules\PowerXaaS`.
 
 #### Start
 Then, start service or run `.\PowerXaaS.ps1 -Start`

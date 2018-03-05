@@ -1,9 +1,10 @@
 param(
   [Parameter(Mandatory=$true)]$ip,
-  [Parameter(Mandatory=$true)]$port
+  [Parameter(Mandatory=$true)]$port,
+  [Parameter(Mandatory=$false)]$protocol="https"
 )
 
-$BaseUrl = "https://$ip`:$port"
+$BaseUrl = "$protocol`://$ip`:$port"
 $Load = 50
 
 add-type @"
@@ -65,6 +66,7 @@ Describe "Validate PowerXaaS module" {
       $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Status
       $result | should be "Not installed"
       & "$PSScriptRoot\..\PowerXaaS.ps1" -Setup -Ip $ip -Port $port -Start | Out-Null
+      start-sleep 2
     }
   }
   

@@ -8,7 +8,7 @@ Function Write-Log
 
   #Format message to log
   $Date = Get-Date -format "dd/MM/yyyy HH:mm:ss.fff"
-  $Message = "$Date - $Status - $Context - $Description"
+  $Message = "$Date [$Status] $Context - $Description"
   
   #Handle Console Output
   if ($Global:Console.IsPresent)

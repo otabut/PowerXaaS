@@ -10,7 +10,7 @@
 
   .NOTES
     Author: Olivier TABUT
-    1.2.0 release (25/02/2018)
+    1.3.0 release (04/03/2018)
 
   .PARAMETER Version
     Display this script version and exit
@@ -23,6 +23,11 @@
     Optionally use the -Credential argument to specify the user account for running the service
     By default, uses the LocalSystem account
 
+  .PARAMETER Protocol
+    Optionnal
+    Protocol the server will use
+    Default value is https
+    
   .PARAMETER Ip
     Optionnal
     IP address the server will listen to
@@ -32,6 +37,11 @@
     Mandatory
     Port number the server will listen to
 
+  .PARAMETER CertHash
+    Optionnal
+    The thumbprint of the certificate to use
+    If omitted, a self-signed certificate will be generated 
+        
   .PARAMETER Customlogging
     Optionnal
     Switch to use custom logging function
@@ -107,8 +117,10 @@ Param(
   [Parameter(ParameterSetName='Version',Mandatory=$true)][Switch]$Version,                                              # Get this script version
   [Parameter(ParameterSetName='Status',Mandatory=$false)][Switch]$Status,                                               # Get the current service status
   [Parameter(ParameterSetName='Setup',Mandatory=$true)][Switch]$Setup,                                                  # Install the service
+  [Parameter(ParameterSetName='Setup',Mandatory=$false)][string]$Protocol="https",                                      # Protocol the server will use
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][string]$Ip="localhost",                                        # IP address the server will listen to
   [Parameter(ParameterSetName='Setup',Mandatory=$true)][string]$Port,                                                   # Port number the server will listen to
+  [Parameter(ParameterSetName='Setup',Mandatory=$false)][string]$CertHash,                                              # The thumbprint of the certificate to use
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][Switch]$CustomLogging,                                         # Switch to use custom logging function
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][System.Management.Automation.PSCredential]$Credential,         # Service account credential
   [Parameter(ParameterSetName='Setup',Mandatory=$false)]
@@ -116,7 +128,7 @@ Param(
   [Parameter(ParameterSetName='Stop',Mandatory=$true)][Switch]$Stop,                                                    # Stop the service
   [Parameter(ParameterSetName='Restart',Mandatory=$true)][Switch]$Restart,                                              # Restart the service
   [Parameter(ParameterSetName='Remove',Mandatory=$true)][Switch]$Remove,                                                # Uninstall the service
-  [Parameter(ParameterSetName='Quiesce',Mandatory=$true)][int]$Quiesce,                                              # Quiesce
+  [Parameter(ParameterSetName='Quiesce',Mandatory=$true)][int]$Quiesce,                                                 # Quiesce
   [Parameter(ParameterSetName='Service',Mandatory=$true)][Switch]$Service,                                              # Run the service (Internal use only)
   [Parameter(ParameterSetName='Service',Mandatory=$false)][Switch]$Console,                                             # Displays log in console (Internal use only)
   [Parameter(ParameterSetName='SCMStart',Mandatory=$true)][Switch]$SCMStart,                                            # Process SCM Start requests (Internal use only)
@@ -165,6 +177,7 @@ $Global:CustomLogging = $CustomLogging
 
 ### LOAD FUNCTIONS ###
 . $PSScriptRoot\functions\PowerXaaS-helper.ps1                    # Call helper script which contains thread management functions
+. $PSScriptRoot\functions\netsh-helper.ps1                        # Call helper script which contains netsh related functions
 . $PSScriptRoot\functions\Write-Log.ps1                           # Call logging function
 . $PSScriptRoot\functions\Start-CustomLogging.ps1                 # Call custom logging function
 . $PSScriptRoot\functions\Receive-Request.ps1                     # Call main function
@@ -205,6 +218,7 @@ if ($Setup)            # Install the service
     # This is the normal case here. Do not throw or write any error! And continue with the installation.
     Write-Output "Starting installation..." # Also avoids a ScriptAnalyzer warning
   }
+  
   # Copy the sources into the installation directory
   try
   {
@@ -237,6 +251,7 @@ if ($Setup)            # Install the service
     Write-Error "Failed to copy files to installation directory. Please check rights."
     exit 1
   }
+
   # Generate the service .EXE from the C# source embedded in this script
   try
   {
@@ -249,12 +264,31 @@ if ($Setup)            # Install the service
     Write-error "Failed to create the $exeFullName service stub. $msg"
     exit 1
   }
+  
   # Set some registry keys
   [Environment]::SetEnvironmentVariable("Path", $env:Path + ";$InstallDir", [EnvironmentVariableTarget]::Machine)
   New-Item -Path HKLM:\Software\PowerXaaS -Force | Out-Null
-  New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings -Value "https://$ip`:$port/" -PropertyType String -Force | Out-Null
-  New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name TokenLifetime -Value "4" -PropertyType String -Force | Out-Null    # value in hours
-  New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name LogSize -Value "2" -PropertyType String -Force | Out-Null          # value in Mb
+  New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings -Value "$protocol`://$ip`:$port/" -PropertyType String -Force | Out-Null
+  New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name TokenLifetime -Value "4" -PropertyType String -ErrorAction SilentlyContinue | Out-Null    # value in hours
+  New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name LogSize -Value "2" -PropertyType String -ErrorAction SilentlyContinue | Out-Null          # value in Mb
+  
+  # Configure HTTP server
+  Write-Output "Configuring HTTP server"
+  $IpPort = "$ip`:$port"
+  $Url="$Protocol`://$IpPort/"
+  Register-URLPrefix -Prefix $Url | Out-Null
+  if (!(Get-URLPrefix | Where-Object {$_.url -eq $Url}))
+  {
+    Write-error "Failed to create the bindings"
+    exit 1
+  }
+  Register-SSLCertificate -IpPort $IpPort | Out-Null
+  if (!(Get-SSLCertificate | Where-Object {$_.IpPort -eq $IpPort}))
+  {
+    Write-error "Failed to associate the SSL certificate"
+    exit 1
+  }
+  
   # Register the service
   Write-Output "Registering service $ServiceName"
   if ($Credential.UserName)
@@ -289,6 +323,14 @@ if ($Remove)           # Uninstall the service
   {
     Write-Output "Service already uninstalled"
   }
+  
+  # Unconfigure HTTP server
+  Write-Output "Unconfiguring HTTP server"
+  $Bindings = (Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings).Bindings
+  $IpPort = $Bindings.split('/')[2]
+  Unregister-URLPrefix -Prefix $Bindings | Out-Null
+  Unregister-SSLCertificate -IpPort $IpPort | Out-Null
+
   # Remove the installed files
   if (Test-Path $InstallDir)
   {

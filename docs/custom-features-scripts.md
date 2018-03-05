@@ -6,7 +6,7 @@ Here are the main rules to follow in order for custom scripts to run smoothly :
 - the script name must be the feature name
 - the script will be able to take advantage of all input parameters available in the Inputs object (see further)
 - HTTP standard return codes must be managed for all scenario
-- return content should be JSON or basic text
+- return content should be properly set
 
 
 ### The Inputs object
@@ -23,7 +23,11 @@ Inside the Inputs object, you will find :
 
 Custom features scripts must return the following Powershell Custom Object :
 
-`[PSCustomObject]@{ReturnCode=<[System.Net.HttpStatusCode]>;Content=<json string>}`
+    [PSCustomObject]@{
+      ReturnCode=<[System.Net.HttpStatusCode]>
+      Content=<string>
+      ContentType=<content-type>
+    }
 
 see [System.Net.HttpStatusCode](https://msdn.microsoft.com/fr-fr/library/system.net.httpstatuscode(v=vs.110).aspx)
 

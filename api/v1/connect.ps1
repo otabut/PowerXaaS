@@ -58,6 +58,7 @@ try
         $result = [PSCustomObject]@{
           ReturnCode = [Int][System.Net.HttpStatusCode]::OK
           Content = $Content | ConvertTo-JSON
+          ContentType = "application/json"
         }
       }
       else
@@ -65,6 +66,7 @@ try
         $result = [PSCustomObject]@{
           ReturnCode = [Int][System.Net.HttpStatusCode]::Unauthorized
           Content = "Authentication has failed"
+          ContentType = "text/plain"
         }
       }
     }
@@ -74,6 +76,7 @@ try
       $result = [PSCustomObject]@{
         ReturnCode = [Int][System.Net.HttpStatusCode]::NotFound
         Content = "This endpoint is not managed by this API version"
+        ContentType = "text/plain"
       }
     }
   }
@@ -83,6 +86,7 @@ catch
   $result = [PSCustomObject]@{
     ReturnCode = [Int][System.Net.HttpStatusCode]::InternalServerError
     Content = "Error while processing"
+    ContentType = "text/plain"
   }
 }
 
