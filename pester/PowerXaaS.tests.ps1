@@ -1,9 +1,10 @@
 param(
   [Parameter(Mandatory=$true)]$ip,
-  [Parameter(Mandatory=$true)]$port
+  [Parameter(Mandatory=$true)]$port,
+  [Parameter(Mandatory=$false)]$protocol="https"
 )
 
-$BaseUrl = "https://$ip`:$port"
+$BaseUrl = "$protocol`://$ip`:$port"
 $Load = 50
 
 add-type @"
@@ -22,6 +23,7 @@ add-type @"
 
 Describe "Validate PowerXaaS module" {
 
+<#
   Context "'Setup'" {
 
     It "Status" {
@@ -67,6 +69,7 @@ Describe "Validate PowerXaaS module" {
       & "$PSScriptRoot\..\PowerXaaS.ps1" -Setup -Ip $ip -Port $port -Start | Out-Null
     }
   }
+#>
   
   Context "'Functionnal unitary testing'" {
 
@@ -277,7 +280,7 @@ Describe "Validate PowerXaaS module" {
 
       $nbSuccess | should be $Load
 
-      & "$PSScriptRoot\..\PowerXaaS.ps1" -Remove | Out-Null
+      #& "$PSScriptRoot\..\PowerXaaS.ps1" -Remove | Out-Null
     }
   }
 }
