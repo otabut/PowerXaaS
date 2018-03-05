@@ -124,6 +124,48 @@ function Register-SSLCertificate
 }
 
 
+function Unregister-SSLCertificate
+{
+<#
+  .SYNOPSIS
+      Unregisters a SSL certificate
+  .DESCRIPTION
+      Requires elevated privileges to unregister a SSL certificate using netsh
+  .PARAMETER IpPort
+      The target IP/Port the certificate will be associated
+  .INPUTS
+      None
+  .OUTPUTS
+      None
+#>
+
+  [CmdletBinding()]
+
+  param(
+    [Parameter(Mandatory=$true)][String]$IpPort
+  )
+
+  begin
+  {
+    $CurrentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+    if (-not ((New-Object Security.Principal.WindowsPrincipal $CurrentUser).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)))
+    {
+      Write-Error -Message "Elevated privileges required" -ErrorAction Stop
+    }
+  }
+
+  process
+  {
+    $netsh_cmd = 'netsh http delete sslcert ipport="$IpPort"'
+    Write-Verbose "Registering SSL certificate using $netsh_cmd"
+    $result = Invoke-Expression -Command "$netsh_cmd"
+    $result -match 'SSL certificate successfully deleted'
+  }
+
+  end {}
+}
+
+
 function Get-URLPrefix
 {
 <#
@@ -226,3 +268,46 @@ function Register-URLPrefix
 
   end {}
 }
+
+
+function Unregister-URLPrefix
+{
+<#
+  .SYNOPSIS
+      Unregisters a URL Prefix
+  .DESCRIPTION
+      Requires elevated privileges to unregister a URL prefix using netsh
+  .PARAMETER Prefix
+      The prefix to unregister
+  .INPUTS
+      None
+  .OUTPUTS
+      None
+#>
+
+  [CmdletBinding()]
+
+  param(
+    [Parameter(Mandatory=$true)][String]$Prefix
+  )
+
+  begin
+  {
+    $CurrentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+    if (-not ((New-Object Security.Principal.WindowsPrincipal $CurrentUser).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)))
+    {
+      Write-Error -Message "Elevated privileges required" -ErrorAction Stop
+    }
+  }
+
+  process
+  {
+    $netsh_cmd = "netsh http delete urlacl url=$Prefix"
+    Write-Verbose "Unregistering URL prefix using $netsh_cmd"
+    $result = Invoke-Expression -Command $netsh_cmd
+    $result -match 'URL reservation successfully deleted'
+  }
+
+  end {}
+}
+a
