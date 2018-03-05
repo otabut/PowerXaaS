@@ -23,7 +23,6 @@ add-type @"
 
 Describe "Validate PowerXaaS module" {
 
-<#
   Context "'Setup'" {
 
     It "Status" {
@@ -69,7 +68,6 @@ Describe "Validate PowerXaaS module" {
       & "$PSScriptRoot\..\PowerXaaS.ps1" -Setup -Ip $ip -Port $port -Start | Out-Null
     }
   }
-#>
   
   Context "'Functionnal unitary testing'" {
 
@@ -280,7 +278,7 @@ Describe "Validate PowerXaaS module" {
 
       $nbSuccess | should be $Load
 
-      #& "$PSScriptRoot\..\PowerXaaS.ps1" -Remove | Out-Null
+      & "$PSScriptRoot\..\PowerXaaS.ps1" -Remove | Out-Null
     }
   }
 }
