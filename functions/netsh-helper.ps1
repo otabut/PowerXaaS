@@ -82,12 +82,13 @@ function Register-SSLCertificate
 
   param(
     [Parameter(Mandatory=$true)][String]$IpPort,
-    [Parameter(Mandatory=$true)][String]$CertHash
+    [Parameter(Mandatory=$false)][String]$CertHash
   )
 
   begin
   {
-    if (-not (Test-IsAdministrator))
+    $user = [Security.Principal.WindowsIdentity]::GetCurrent()
+    if (-not ((New-Object Security.Principal.WindowsPrincipal $User).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)))
     {
       Write-Error -Message "Elevated privileges required" -ErrorAction Stop
     }
@@ -96,12 +97,18 @@ function Register-SSLCertificate
   process
   {
     $guid = ([guid]::NewGuid()).guid
+
+    if(!($CertHash))
+    {
+      $reg = Get-ItemProperty  HKLM:\system\CurrentControlSet\Services\tcpip\parameters 
+      $dns = $reg.hostname + "." + $reg.'NV Domain'
+      $CertHash = (New-SelfSignedCertificate -DnsName $dns -CertStoreLocation Cert:\LocalMachine\My).thumbprint
+    }
     
     if (Get-ChildItem -path cert:\LocalMachine -recurse | where {$_.Thumbprint -eq $CertHash})
     {
-      #$CertHash = (New-SelfSignedCertificate -DnsName <yourdnsname> -CertStoreLocation Cert:\LocalMachine\My).thumbprint
       #Add-NetIPHttpsCertBinding -IpPort $IpPort -CertificateHash $Certhash -CertificateStoreName "My" -ApplicationId "{$guid}" -NullEncryption $false
-      $netsh_cmd = 'netsh http add sslcert ipport="$IpPort" certhash="$CertHash" appid="{$guid}"'
+      $netsh_cmd = 'netsh http add sslcert ipport="$IpPort" certhash="$CertHash" appid="{$guid}" certstorename="My"'
       Write-Verbose "Registering SSL certificate using $netsh_cmd"
       $result = Invoke-Expression -Command "$netsh_cmd"
     }
