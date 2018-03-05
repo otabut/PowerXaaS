@@ -269,8 +269,8 @@ if ($Setup)            # Install the service
   [Environment]::SetEnvironmentVariable("Path", $env:Path + ";$InstallDir", [EnvironmentVariableTarget]::Machine)
   New-Item -Path HKLM:\Software\PowerXaaS -Force | Out-Null
   New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings -Value "$protocol`://$ip`:$port/" -PropertyType String -Force | Out-Null
-  New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name TokenLifetime -Value "4" -PropertyType String -Force | Out-Null    # value in hours
-  New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name LogSize -Value "2" -PropertyType String -Force | Out-Null          # value in Mb
+  New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name TokenLifetime -Value "4" -PropertyType String -ErrorAction SilentlyContinue | Out-Null    # value in hours
+  New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name LogSize -Value "2" -PropertyType String -ErrorAction SilentlyContinue | Out-Null          # value in Mb
   
   # Configure HTTP server
   Write-Output "Configuring HTTP server"
