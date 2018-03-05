@@ -2,11 +2,13 @@
 ### Install PowerXaaS
 
 #### Install
-Run `.\PowerXaaS.ps1 -Setup -Ip <ipaddress> -Port <port> [-Protocol <https|http>] [-CertHash <Thumbprint>] [-Start] [-CustomLogging]`.
+Run `.\PowerXaaS.ps1 -Setup -Ip <ipaddress> -Port <port> [-Protocol <https|http>] [-CertHash <Thumbprint>] [-Start] [-Credential] [-CustomLogging]`.
 
 Default protocol is HTTPS.
 
 If you don't give a certificate thumbprint, a self-signed certificate will be used instead.
+
+You can specify alternate credentials for service account. Default is LocalSystem.
 
 You can choose to use custom logging function : write your own code in `Start-CustomLogging.ps1`
 
