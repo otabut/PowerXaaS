@@ -26,7 +26,7 @@ Function Set-PXEndpoint
       }
       $Config.features += $Feature
     }
-    ($Config.features | where {$_.Name -eq $Feature}).endpoints += $Endpoint
+    ($Config.features | where {$_.Name -eq $Feature}).endpoints = @((($Config.features | where {$_.Name -eq $Feature}).endpoints | where {($_.url -ne $Url) -and ($_.method -ne $Method)}),$endpoint)
     $Config | ConvertTo-Json -Depth 5 | Set-Content $ConfigurationFile
   }
   catch
