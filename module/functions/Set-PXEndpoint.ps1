@@ -26,7 +26,16 @@ Function Set-PXEndpoint
       }
       $Config.features += $Feature
     }
-    ($Config.features | where {$_.Name -eq $Feature}).endpoints = @((($Config.features | where {$_.Name -eq $Feature}).endpoints | where {($_.url -ne $Url) -and ($_.method -ne $Method)}),$endpoint)
+    $OtherEndpoints = ($Config.features | where {$_.Name -eq $Feature}).endpoints | where {($_.url -ne $Url) -and ($_.method -ne $Method)}
+    if ($OtherEndpoints)
+    {
+      $AllEndpoints = @($OtherEndpoints,$Endpoint)
+    }
+    else
+    {
+      $AllEndpoints = @($Endpoint)
+    }
+    ($Config.features | where {$_.Name -eq $Feature}).endpoints = $AllEndpoints
     $Config | ConvertTo-Json -Depth 5 | Set-Content $ConfigurationFile
   }
   catch
