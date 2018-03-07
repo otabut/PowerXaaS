@@ -1,14 +1,22 @@
 Function Get-PXUsageStats
 {
   param(
-    $StartTimestamp,
-    $EndTimestamp,
-    [switch]$Raw,
-    [switch]$ByReturnCode,
-    [switch]$Count
+    [parameter(Mandatory=$false)][String]$StartTimestamp,
+    [parameter(Mandatory=$false)][String]$EndTimestamp,
+    [parameter(Mandatory=$false)][switch]$Raw,
+    [parameter(Mandatory=$false)][switch]$ByReturnCode,
+    [parameter(Mandatory=$false)][switch]$Count
   )
 
-  $Data = Get-Content "${ENV:ProgramFiles}\PowerXaaS\data.log" | ConvertFrom-Csv -Delimiter ';' -Header timestamp,method,url,returncode #| Where {$_.timestamp -ge 1 -and $_.timestamp -le 5}
+  $Data = Get-Content "${ENV:ProgramFiles}\PowerXaaS\data.log" | ConvertFrom-Csv -Delimiter ';' -Header timestamp,method,url,returncode 
+  if ($StartTimestamp)
+  {
+    $Data = $Data | Where {$_.timestamp -ge $StartTimestamp}
+  }
+  if ($EndTimestamp)
+  {
+    $Data = $Data | Where {$_.timestamp -le $EndTimestamp}
+  }
 
   if ($Raw.IsPresent)
   {
@@ -29,4 +37,3 @@ Function Get-PXUsageStats
   $data = $data | Group-Object -NoElement -Property Method,Url,ReturnCode | Select @{N="Method"; E={$_.Name.split(',')[0].trim()}},@{N="Url"; E={$_.Name.split(',')[1].trim()}},@{N="ReturnCode"; E={$_.Name.split(',')[2].trim()}}, Count
   return $Data
 }
-
