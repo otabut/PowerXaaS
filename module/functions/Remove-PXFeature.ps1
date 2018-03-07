@@ -7,6 +7,12 @@ Function Remove-PXFeature
   $ErrorActionPreference = "stop"
   try
   {
+    If ($Name -eq 'builtin')
+    {
+      Write-Warning "Builtin feature can't be removed"
+      return
+    }
+    
     $ConfigurationFile = "${ENV:ProgramFiles}\PowerXaaS\PowerXaaS.conf"
     $Config = Get-Content $ConfigurationFile | ConvertFrom-Json
     If ($Config.features | where {$_.Name -eq $Name})
