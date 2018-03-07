@@ -9,6 +9,12 @@ Function Remove-PXEndpoint
   $ErrorActionPreference = "stop"
   try
   {
+    If ($Feature -eq 'builtin')
+    {
+      Write-Warning "Endpoints from builtin feature can't be removed"
+      return
+    }
+
     $ConfigurationFile = "${ENV:ProgramFiles}\PowerXaaS\PowerXaaS.conf"
     $Config = Get-Content $ConfigurationFile | ConvertFrom-Json
     If ($Config.features | where {$_.Name -eq $Feature})
