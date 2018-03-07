@@ -138,7 +138,7 @@ Param(
 ### GLOBAL SETTINGS ###
 
 # This script name, with various levels of details
-$ScriptVersion = "1.2.0"
+$ScriptVersion = "1.3.0"
 $argv0 = Get-Item $MyInvocation.MyCommand.Definition
 $Script = $argv0.basename                                         # Ex: PowerXaaS
 $ScriptName = $argv0.name                                         # Ex: PowerXaaS.ps1
