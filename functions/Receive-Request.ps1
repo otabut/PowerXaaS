@@ -91,8 +91,8 @@ Function Receive-Request
           $Script = "$Folder\$Feature.ps1"
           $Parameters.PSObject.Properties.Remove('0')
           $Inputs = [PSCustomObject]@{
-            URL = $($Request.url.localpath.substring(1) -replace 'api/v\d*','')
-            Method = $($Request.httpmethod)
+            URL = $Endpoint
+            Method = $Method
             Body = $Body
             Parameters = $Parameters
           }
