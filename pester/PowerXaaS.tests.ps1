@@ -98,6 +98,16 @@ Describe "Validate PowerXaaS module" {
       (invoke-webrequest -Uri "$BaseUrl/api/v1/addition/3+4" -Method GET -Headers $Headers).content | should be 7
     }
 
+    It "GET stats" {
+
+      (invoke-webrequest -Uri "$BaseUrl/api/v1/stats" -Method GET -Headers $Headers).StatusCode | should be $([Int][System.Net.HttpStatusCode]::OK)
+    }
+
+    It "GET endpoints" {
+
+      (invoke-webrequest -Uri "$BaseUrl/api/v1/endpoints" -Method GET -Headers $Headers).StatusCode | should be $([Int][System.Net.HttpStatusCode]::OK)
+    }
+
      
     BeforeEach {
       
