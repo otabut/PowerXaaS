@@ -66,7 +66,7 @@ try
     {
       $result = [PSCustomObject]@{
         ReturnCode = [Int][System.Net.HttpStatusCode]::OK
-        Content = Get-PXUsageStats | ConvertTo-Json
+        Content = Get-PXUsageStats -raw | ConvertTo-Json
         ContentType = "application/json"
       }
     }
