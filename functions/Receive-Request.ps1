@@ -181,6 +181,11 @@ Function Receive-Request
   }
   Write-Log -Status "Information" -Context "Process $RequestId" -Description "Request processed"
 
+  ### WRITE STATS ###
+  $timestamp = Get-Date -format "yyyyMMdd-HHmmss"
+  $stat = "$timestamp;$Method;$Endpoint;$($Result.ReturnCode)"
+  Add-Content "${ENV:ProgramFiles}\PowerXaaS\data.log" $stat
+  
   ### SEND RESPONSE ###    
   Write-Log -Status "Information" -Context "Process $RequestId" -Description "Return code is $($Result.ReturnCode)"
   $Response.StatusCode = $Result.ReturnCode
