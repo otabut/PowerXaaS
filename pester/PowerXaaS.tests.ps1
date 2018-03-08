@@ -70,6 +70,43 @@ Describe "Validate PowerXaaS module" {
     }
   }
   
+  Context "'Cmdlets'" {
+  
+    It "Get-PXFeature" {
+    
+    }
+
+    It "Get-PXEndpoint" {
+    
+    }
+
+    It "New-PXFeature" {
+    
+    }
+
+    It "Disable-PXFeature" {
+    
+    }
+    
+    It "Enable-PXFeature" {
+    
+    }
+    
+    It "Set-PXEndpoint" {
+    
+    }
+
+    It "Remove-PXEndpoint" {
+    
+    }
+
+    It "Remove-PXFeature" {
+    
+    }
+
+
+  }
+  
   Context "'Functionnal unitary testing'" {
 
     It "Connect" {
