@@ -335,7 +335,7 @@ if ($Remove)           # Uninstall the service
   if (Test-Path $InstallDir)
   {
     Write-Output "Deleting files"
-    Remove-Item $InstallDir -Recurse -ErrorAction silentlyContinue
+    Remove-Item $InstallDir -Recurse -Exclude "*.log" -ErrorAction silentlyContinue
     Remove-Item "${ENV:ProgramFiles}\WindowsPowerShell\Modules\$Script" -Recurse -ErrorAction silentlyContinue
   }
   [Environment]::SetEnvironmentVariable("Path", $env:Path.replace(";$InstallDir",""), [EnvironmentVariableTarget]::Machine)
