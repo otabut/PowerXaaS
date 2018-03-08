@@ -71,16 +71,6 @@ try
       }
     }
 
-    "/stats/*"
-    {
-      $result = [PSCustomObject]@{
-        ReturnCode = [Int][System.Net.HttpStatusCode]::OK
-        Content = Get-PXUsageStats -StartTimestamp -EndTimestamp | ConvertTo-Json
-        ContentType = "application/json"
-      }
-    }
-
-
     default
     {
       $result = [PSCustomObject]@{
