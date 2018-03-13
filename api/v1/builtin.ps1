@@ -53,6 +53,15 @@ try
       }
     }
 
+    "/version"
+    {
+      $result = [PSCustomObject]@{
+        ReturnCode = [Int][System.Net.HttpStatusCode]::OK
+        Content = "Version 1.0.0"
+        ContentType = "text/plain"
+      }
+    }
+
     "/endpoints"
     {
       $result = [PSCustomObject]@{
