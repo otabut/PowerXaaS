@@ -7,15 +7,6 @@ try
 {
   switch -regex ($inputs.url)
   {
-    "/version"
-    {
-      $result = [PSCustomObject]@{
-        ReturnCode = [Int][System.Net.HttpStatusCode]::OK
-        Content = "Version 1.0.0"
-        ContentType = "text/plain"
-      }
-    }
-
     "/echo"
     {
       if ([string]::IsNullOrEmpty($inputs.Body) -or [string]::IsNullOrEmpty($inputs.Body.text))
