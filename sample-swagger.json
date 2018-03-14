@@ -3,7 +3,7 @@
   "info": {
     "description": "This is a sample PowerXaaS server.",
     "version": "1.0.0",
-    "title": "Swagger PowerXaaS",
+    "title": "Swagger PowerXaaS"
   },
   "schemes": ["https"],
   "host":"wnpardhco0020:8087",
