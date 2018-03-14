@@ -35,6 +35,8 @@ You should not edit the configuration file directly. The Powershell module conta
     Set-PXEndpoint
     Remove-PXEndpoint
 
+When you create a new feature with `New-PXFeature`, you can specify the `-createfile` switch so that a script template is generated to help you start writing your API code.
+
 
 ### Auto-refresh
 
