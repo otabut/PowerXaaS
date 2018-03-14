@@ -8,6 +8,8 @@ Here are the main rules to follow in order for custom scripts to run smoothly :
 - HTTP standard return codes must be managed for all scenario
 - return content should be properly set
 
+When you create a new feature with `New-PXFeature`, you can specify the `-createfile` switch so that a script template is generated to help you start writing your API code.
+
 
 ### The Inputs object
 
