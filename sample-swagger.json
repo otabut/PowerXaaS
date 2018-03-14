@@ -109,7 +109,7 @@
     "/echo": {
       "post": {
         "tags": [
-          "Built-in"
+          "Demo"
         ],
         "summary": "Echo text",
         "description": "Returns text just sent as parameter in request body",
@@ -156,7 +156,7 @@
     "/addition/{op}": {
       "get": {
         "tags": [
-          "Built-in"
+          "Demo"
         ],
         "summary": "Performs basic addition",
         "description": "Performs basic addition with parameters sent in url",
