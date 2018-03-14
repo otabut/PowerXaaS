@@ -1,6 +1,7 @@
 
 Get-UDDashboard | Stop-UDDashboard
 
+
 $EndpointListPage = New-UDPage -Name "Endpoints list" -Icon link -Content {
 
   New-UDRow {
@@ -33,35 +34,43 @@ $RequestCountPage = New-UDPage -Name "Requests count" -Icon link -Content {
       New-UDChart -Title "Requests count (last 24 hours)" -Type Line -AutoRefresh -RefreshInterval 20 -Endpoint {
         ### Retrieve data
         Import-Module PowerXaaS
-        $Data = Get-PXUsageStats -Raw | Select @{N="ByHour"; E={$_.timestamp.substring(0,11)}}
+        $Data = Get-PXUsageStats -Raw | Select @{N="ByHour"; E={$_.timestamp.substring(0,11)}} | Group-Object -NoElement -Property ByHour
 
         ### Compute data
         $Stats = @()
-        ForEach ($item in ($Data | Group-Object -NoElement -Property ByHour))
+        $h = [int]((get-date).AddHours(-24).tostring("HH"))
+        $d = [int]((get-date).AddHours(-24).tostring("yyyyMMdd"))
+        ForEach ($count in 1..24)
         {
-          $Stats += [PSCustomObject]@{
-            Count = $item.Count
-            Name = $item.Name
-          }
-        }
-        ForEach ($Day in ($Stats | select @{N="Day";E={$_.Name.split('-')[0]}} -unique).day)
-        {
-          ForEach ($Hour in 0..23)
+          $hour = $h + $count
+          $day = $d
+          if ($hour -ge 24)
           {
-            if (([string]$Hour).length -eq 1)
-            {
-              $Hour = "0$Hour"
-            }
-            if (!($Stats | where {$_.Name -eq "$Day-$Hour"}) -and "$Day-$Hour" -le (Get-Date -format "yyyyMMdd-HHmmss"))
-            {
-              $Stats += [PSCustomObject]@{
-                Count = 0
-                Name = "$Day-$Hour"
-              }
+            $hour = $hour - 24
+            $day = $d + 1
+          }
+          if (([string]$hour).length -eq 1)
+          {
+            $hour = "0$hour"
+          }
+
+          $r = $Data | where {$_.Name -eq "$day-$hour"}
+          if ($r)
+          {
+            $Stats += [PSCustomObject]@{
+              Count = $r.Count
+              Name = $r.Name
             }
           }
+          else
+          {
+            $Stats += [PSCustomObject]@{
+              Count = 0
+              Name = "$day-$hour"
+            }    
+          }
         }
-        $Stats = $Stats | sort Name | select -Last 24
+        $Stats = $Stats | sort Name
 
         ### Render data
         $Stats | Out-UDChartData -DataProperty "Name" -LabelProperty "Name" -Dataset @(
