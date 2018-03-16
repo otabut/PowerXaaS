@@ -6,12 +6,13 @@ $ErrorActionPreference = 'stop'
 try
 {
   Import-Module PowerXaaS
+  . "${ENV:ProgramFiles}\PowerXaaS\Functions\JWT-helper.ps1"
   
   switch -regex ($Inputs.url)
   {
     "/connect"
     {
-      $CredentialsList = @{"JohnDoe"="blabla";"WalterWhite"="CrystalMeth";"DexterMorgan"="SliceOfLife"}   ### My account database
+      $CredentialsList = @{"JohnDoe"="blabla";"WalterWhite"="CrystalMeth";"DexterMorgan"="SliceOfLife"}   ### My accounts database
       if ($CredentialsList.$($Inputs.body.username) -eq $Inputs.body.password)  ### Credentials validation
       {
         try
@@ -79,7 +80,7 @@ try
         ContentType = "application/json"
       }
     }
-
+    
     default
     {
       $result = [PSCustomObject]@{
@@ -102,27 +103,3 @@ catch
 }
 
 return $result
-
-
-
-
-
-function MAA-ConvertTo-Base64([string]$data)
-{
-    $temp = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($data))
-    $temp = $temp -replace '=',''
-    
-    return $temp
-}
-
-function MAA-JWT-EncodeSignature([string]$data,[string]$secret)
-{
-    # Powershell HMAC SHA 256
-    $hmacsha = New-Object System.Security.Cryptography.HMACSHA256
-    $hmacsha.key = [Text.Encoding]::ASCII.GetBytes($secret)
-    $signature = $hmacsha.ComputeHash([Text.Encoding]::ASCII.GetBytes($data))
-    $signature = [Convert]::ToBase64String($signature)
-    $signature = $signature -replace '=',''
-
-    return $signature
-}
