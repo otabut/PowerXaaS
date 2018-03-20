@@ -10,7 +10,7 @@
 
   .NOTES
     Author: Olivier TABUT
-    1.4.0 release (11/03/2018)
+    1.4.0 release (31/03/2018)
 
   .PARAMETER Version
     Display this script version and exit
