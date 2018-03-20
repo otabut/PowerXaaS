@@ -41,7 +41,10 @@
     Optionnal
     The thumbprint of the certificate to use
     If omitted, a self-signed certificate will be generated 
-        
+
+  .PARAMETER WithoutAuth
+    Switch to specify that authentification and role-based authorization should not be used
+
   .PARAMETER Customlogging
     Optionnal
     Switch to use custom logging function
@@ -121,6 +124,7 @@ Param(
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][string]$Ip="localhost",                                        # IP address the server will listen to
   [Parameter(ParameterSetName='Setup',Mandatory=$true)][string]$Port,                                                   # Port number the server will listen to
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][string]$CertHash,                                              # The thumbprint of the certificate to use
+  [Parameter(ParameterSetName='Setup',Mandatory=$false)][Switch]$WithoutAuth,                                           # Specify that authentification and role-based authorization should not be used  
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][Switch]$CustomLogging,                                         # Switch to use custom logging function
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][System.Management.Automation.PSCredential]$Credential,         # Service account credential
   [Parameter(ParameterSetName='Setup',Mandatory=$false)]
@@ -271,6 +275,10 @@ if ($Setup)            # Install the service
   New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings -Value "$protocol`://$ip`:$port/" -PropertyType String -Force | Out-Null
   New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name TokenLifetime -Value "4" -PropertyType String -ErrorAction SilentlyContinue | Out-Null    # value in hours
   New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name LogSize -Value "2" -PropertyType String -ErrorAction SilentlyContinue | Out-Null          # value in Mb
+  if ($WithoutAuth.IsPresent)
+  { New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name WithoutAuth -Value "True" -PropertyType String -Force | Out-Null }
+  else
+  { New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name WithoutAuth -Value "False" -PropertyType String -Force | Out-Null }
   
   # Configure HTTP server
   Write-Output "Configuring HTTP server"
