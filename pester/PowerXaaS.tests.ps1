@@ -20,7 +20,6 @@ add-type @"
 "@
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
-
 Describe "Validate PowerXaaS module" {
 
   Context "'Setup'" {
@@ -67,43 +66,49 @@ Describe "Validate PowerXaaS module" {
       $result | should be "Not installed"
       & "$PSScriptRoot\..\PowerXaaS.ps1" -Setup -Ip $ip -Port $port -Start | Out-Null
       start-sleep 2
+      Import-Module PowerXaaS
     }
   }
   
   Context "'Cmdlets'" {
   
     It "Get-PXFeature" {
-    
+      (Get-PXFeature).count | should -BeGreaterThan 0
     }
 
     It "Get-PXEndpoint" {
-    
+      (Get-PXEndpoint).count | should -BeGreaterThan 3
     }
 
     It "New-PXFeature" {
-    
+      New-PXFeature -Name Pester -Active yes
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).name | should -Be 'Pester'
     }
 
     It "Disable-PXFeature" {
-    
+      Disable-PXFeature -Name Pester
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).active | should -Be 'no'
     }
     
     It "Enable-PXFeature" {
-    
+      Enable-PXFeature -Name Pester
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).active | should -Be 'yes'
     }
     
     It "Set-PXEndpoint" {
-    
+      Set-PXEndpoint -Feature Pester -Method GET -Url /temp
+      (Get-PXEndpoint -Feature Pester ).url | should -Be '/temp'
     }
 
     It "Remove-PXEndpoint" {
-    
+      Remove-PXEndpoint -Feature Pester -Method GET -Url /temp
+      (Get-PXEndpoint -Feature Pester ).url | should -Not -Exist
     }
 
     It "Remove-PXFeature" {
-    
+      Remove-PXFeature -Name Pester
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).name | should -Not -Exist
     }
-
 
   }
   
