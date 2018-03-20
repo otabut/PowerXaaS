@@ -67,7 +67,7 @@ Function Receive-Request
       #Check authorization
       if ($Request.headers.GetValues("Authorization") -eq $null)
       {
-        if ($Endpoint -eq '/connect')
+        if (($Endpoint -eq '/connect') -or ((Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name WithoutAuth).WithoutAuth -eq 'True'))
         {
           $Authorized = "Granted"
         }
