@@ -108,7 +108,7 @@ function Register-SSLCertificate
     if (Get-ChildItem -path cert:\LocalMachine -recurse | where {$_.Thumbprint -eq $CertHash})
     {
       #Add-NetIPHttpsCertBinding -IpPort $IpPort -CertificateHash $Certhash -CertificateStoreName "My" -ApplicationId "{$guid}" -NullEncryption $false
-      $netsh_cmd = 'netsh http add sslcert ipport="$IpPort" certhash="$CertHash" appid="{$guid}" certstorename="My"'
+      $netsh_cmd = "netsh http add sslcert ipport=""$IpPort"" certhash=""$CertHash"" appid=""{$guid}"" certstorename=""My"""
       Write-Verbose "Registering SSL certificate using $netsh_cmd"
       $result = Invoke-Expression -Command "$netsh_cmd"
     }
@@ -156,7 +156,7 @@ function Unregister-SSLCertificate
 
   process
   {
-    $netsh_cmd = 'netsh http delete sslcert ipport="$IpPort"'
+    $netsh_cmd = "netsh http delete sslcert ipport=""$IpPort"""
     Write-Verbose "Unregistering SSL certificate using $netsh_cmd"
     $result = Invoke-Expression -Command "$netsh_cmd"
     $result -match 'SSL certificate successfully deleted'
