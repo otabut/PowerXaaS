@@ -293,7 +293,14 @@ if ($Setup)            # Install the service
   if ($Protocol -eq 'https')
   {
     Write-Output "Registering SSL certificate"
-    Register-SSLCertificate -IpPort $IpPort | Out-Null
+    if ($CertHash)
+    {
+      Register-SSLCertificate -IpPort $IpPort -CertHash $CertHash | Out-Null
+    }
+    else
+    {
+      Register-SSLCertificate -IpPort $IpPort | Out-Null
+    }
     if (!(Get-SSLCertificate | Where-Object {$_.IpPort -eq $IpPort}))
     {
       Write-error "Failed to associate the SSL certificate"
