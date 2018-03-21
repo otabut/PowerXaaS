@@ -238,7 +238,7 @@ Describe "Validate PowerXaaS" {
       $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::BadRequest)
     }
 
-    It "Invalid return code" {
+    It "invalid return code" {
 
       try
       {
