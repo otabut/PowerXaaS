@@ -20,7 +20,7 @@ add-type @"
 "@
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
-Describe "Validate PowerXaaS module" {
+Describe "Validate PowerXaaS" {
 
   Context "'Setup'" {
 
@@ -97,17 +97,17 @@ Describe "Validate PowerXaaS module" {
     
     It "Set-PXEndpoint" {
       Set-PXEndpoint -Feature Pester -Method GET -Url /temp
-      (Get-PXEndpoint -Feature Pester ).url | should -Be '/temp'
+      (Get-PXEndpoint -Feature Pester).url | should -Be '/temp'
     }
 
     It "Remove-PXEndpoint" {
       Remove-PXEndpoint -Feature Pester -Method GET -Url /temp
-      (Get-PXEndpoint -Feature Pester ).url | should -Not -Exist
+      (Get-PXEndpoint -Feature Pester).url | should -Be $null
     }
 
     It "Remove-PXFeature" {
       Remove-PXFeature -Name Pester
-      (Get-PXFeature | where {$_.Name -eq 'Pester'}).name | should -Not -Exist
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).name | should -Be $null
     }
 
   }
