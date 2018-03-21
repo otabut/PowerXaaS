@@ -185,7 +185,7 @@ Describe "Validate PowerXaaS" {
 
       try
       {
-        invoke-webrequest -Uri "$BaseUrl/api/v9/addition/3+4" -Method GET -Headers $Headers
+        invoke-webrequest -Uri "$BaseUrl/api/v9//endpoints" -Method GET -Headers $Headers
       }
       catch
       {
@@ -193,6 +193,20 @@ Describe "Validate PowerXaaS" {
         $StatusMessage = $_.ErrorDetails.Message
       }
       $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::NotFound)
+    }
+    
+    It "unmanaged feature" {
+
+      try
+      {
+        invoke-webrequest -Uri "$BaseUrl/api/v9/addition/3+4" -Method GET -Headers $Headers
+      }
+      catch
+      {
+        $StatusCode = $_.Exception.Response.StatusCode.Value__
+        $StatusMessage = $_.ErrorDetails.Message
+      }
+      $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::InternalServerError)
     }
 
     It "malformatted JSON" {
