@@ -120,7 +120,7 @@ Param(
   [Parameter(ParameterSetName='Version',Mandatory=$true)][Switch]$Version,                                              # Get this script version
   [Parameter(ParameterSetName='Status',Mandatory=$false)][Switch]$Status,                                               # Get the current service status
   [Parameter(ParameterSetName='Setup',Mandatory=$true)][Switch]$Setup,                                                  # Install the service
-  [Parameter(ParameterSetName='Setup',Mandatory=$false)][string]$Protocol="https",                                      # Protocol the server will use
+  [Parameter(ParameterSetName='Setup',Mandatory=$false)][ValidateSet("http","https")][string]$Protocol="https",         # Protocol the server will use
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][string]$Ip="localhost",                                        # IP address the server will listen to
   [Parameter(ParameterSetName='Setup',Mandatory=$true)][string]$Port,                                                   # Port number the server will listen to
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][string]$CertHash,                                              # The thumbprint of the certificate to use
@@ -283,18 +283,22 @@ if ($Setup)            # Install the service
   # Configure HTTP server
   Write-Output "Configuring HTTP server"
   $IpPort = "$ip`:$port"
-  $Url="$Protocol`://$IpPort/"
+  $Url = "$Protocol`://$IpPort/"
   Register-URLPrefix -Prefix $Url | Out-Null
   if (!(Get-URLPrefix | Where-Object {$_.url -eq $Url}))
   {
     Write-error "Failed to create the bindings"
     exit 1
   }
-  Register-SSLCertificate -IpPort $IpPort | Out-Null
-  if (!(Get-SSLCertificate | Where-Object {$_.IpPort -eq $IpPort}))
+  if ($Protocol -eq 'https')
   {
-    Write-error "Failed to associate the SSL certificate"
-    exit 1
+    Write-Output "Registering SSL certificate"
+    Register-SSLCertificate -IpPort $IpPort | Out-Null
+    if (!(Get-SSLCertificate | Where-Object {$_.IpPort -eq $IpPort}))
+    {
+      Write-error "Failed to associate the SSL certificate"
+      exit 1
+    }
   }
   
   # Register the service
