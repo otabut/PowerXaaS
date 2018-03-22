@@ -195,7 +195,7 @@ function Get-URLPrefix
     $info = @()
     ForEach ($Line in $result)
     {
-      if ($Line -match 'Reserved URL\s+\: (?<url>.*)')
+      if ($Line -match 'URL.*\: (?<url>.*)')
       {
         $url = $matches.url
       }
@@ -246,7 +246,7 @@ function Register-URLPrefix
 
   param(
     [Parameter(Mandatory=$true)][String]$Prefix,
-    [Parameter(Mandatory=$false)][String]$User="Everyone"
+    [Parameter(Mandatory=$false)][String]$User
   )
 
   begin
@@ -260,7 +260,14 @@ function Register-URLPrefix
 
   process
   {
-    $netsh_cmd = "netsh http add urlacl url=$Prefix user=$User"
+    if ($User)
+    {
+      $netsh_cmd = "netsh http add urlacl url=$Prefix user=$User"
+    }
+    else
+    {
+      $netsh_cmd = "netsh http add urlacl url=$Prefix sddl=D:(A;;GA;;;WD)"
+    }
     Write-Verbose "Registering URL prefix using $netsh_cmd"
     $result = Invoke-Expression -Command $netsh_cmd
     $result -match 'URL reservation successfully added'
