@@ -199,13 +199,12 @@ function Get-URLPrefix
       {
         $url = $matches.url
       }
-      elseif ($Line -match 'User\: (?<user>.*)')
+      elseif ($Line -match 'SDDL\s+: (?<sddl>.*)')
       {
-        $user = $matches.user
-
+        $SDDL = $matches.sddl
         $info += [PSCustomObject]@{
           'URL' = $url.Trim()
-          'User' = $user.Trim()
+          'SDDL' = $SDDL.Trim()
         }
       }
     }
