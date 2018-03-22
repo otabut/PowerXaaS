@@ -20,39 +20,18 @@ function Get-SSLCertificate
 
   process
   {
-    $LastLine = $false
     $netsh_cmd = "netsh http show sslcert"
     $result = Invoke-Expression -Command $netsh_cmd
+    $result = $result.replace('IP:port','IP-port')
+    $result = $result | select -Last ($result.count-4) | where { $_ }
 
-    ForEach ($Line in $result)
+    For($i=0;$i -lt $result.count;$i+=14)
     {
-      if ($Line -match 'IP:port\s+\: (?<IpPort>.*)')
-      {
-        $IpPort = $matches.IpPort
-      }
-      elseif ($Line -match 'Certificate Hash\s+\: (?<CertHash>.*)')
-      {
-        $CertHash = $matches.CertHash
-      }
-      elseif ($Line -match 'Application ID\s+\: (?<AppId>.*)')
-      {
-        $AppId = $matches.AppId
-      }
-      elseif ($Line -match 'Certificate Store Name\s+\: (?<StoreName>.*)')
-      {
-        $StoreName = $matches.StoreName
-        $LastLine = $true
-      }
-                 
-      if ($LastLine)
-      {
-        [PSCustomObject]@{
-          'IpPort' = $IpPort.Trim()
-          'CertHash' = $CertHash.Trim()
-          'AppId' = $AppId.Trim()
-          'StoreName' = $StoreName.Trim()
-        }
-        $LastLine = $false
+      [PSCustomObject]@{
+        'IpPort' = $result[$i].split(':',2)[1].trim()
+        'CertHash' = $result[$i+1].split(':',2)[1].trim()
+        'AppId' = $result[$i+2].split(':',2)[1].trim()
+        'StoreName' = $result[$i+3].split(':',3)[2].trim()
       }
     }
   }
