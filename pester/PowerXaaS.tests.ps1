@@ -70,7 +70,7 @@ Describe "Validate PowerXaaS" {
     }
   }
   
-  Context "'Cmdlets'" {
+  Context "'Feature and Endpoints management Cmdlets'" {
   
     It "Get-PXFeature" {
       (Get-PXFeature).count | should BeGreaterThan 0
@@ -110,6 +110,10 @@ Describe "Validate PowerXaaS" {
       (Get-PXFeature | where {$_.Name -eq 'Pester'}).name | should Be $null
     }
 
+  }
+  
+  Context "'Users, Roles and Rights management Cmdlets'" {
+  
   }
   
   Context "'Functionnal unitary testing'" {
