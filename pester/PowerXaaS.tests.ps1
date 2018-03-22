@@ -73,41 +73,41 @@ Describe "Validate PowerXaaS" {
   Context "'Cmdlets'" {
   
     It "Get-PXFeature" {
-      (Get-PXFeature).count | should -BeGreaterThan 0
+      (Get-PXFeature).count | should BeGreaterThan 0
     }
 
     It "Get-PXEndpoint" {
-      (Get-PXEndpoint).count | should -BeGreaterThan 3
+      (Get-PXEndpoint).count | should BeGreaterThan 3
     }
 
     It "New-PXFeature" {
       New-PXFeature -Name Pester -Active yes
-      (Get-PXFeature | where {$_.Name -eq 'Pester'}).name | should -Be 'Pester'
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).name | should Be 'Pester'
     }
 
     It "Disable-PXFeature" {
       Disable-PXFeature -Name Pester
-      (Get-PXFeature | where {$_.Name -eq 'Pester'}).active | should -Be 'no'
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).active | should Be 'no'
     }
     
     It "Enable-PXFeature" {
       Enable-PXFeature -Name Pester
-      (Get-PXFeature | where {$_.Name -eq 'Pester'}).active | should -Be 'yes'
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).active | should Be 'yes'
     }
     
     It "Set-PXEndpoint" {
       Set-PXEndpoint -Feature Pester -Method GET -Url /temp
-      (Get-PXEndpoint -Feature Pester).url | should -Be '/temp'
+      (Get-PXEndpoint -Feature Pester).url | should Be '/temp'
     }
 
     It "Remove-PXEndpoint" {
       Remove-PXEndpoint -Feature Pester -Method GET -Url /temp
-      (Get-PXEndpoint -Feature Pester).url | should -Be $null
+      (Get-PXEndpoint -Feature Pester).url | should Be $null
     }
 
     It "Remove-PXFeature" {
       Remove-PXFeature -Name Pester
-      (Get-PXFeature | where {$_.Name -eq 'Pester'}).name | should -Be $null
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).name | should Be $null
     }
 
   }
