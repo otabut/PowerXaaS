@@ -10,7 +10,7 @@
 
   .NOTES
     Author: Olivier TABUT
-    1.3.0 release (04/03/2018)
+    1.4.0 release (31/03/2018)
 
   .PARAMETER Version
     Display this script version and exit
@@ -41,7 +41,10 @@
     Optionnal
     The thumbprint of the certificate to use
     If omitted, a self-signed certificate will be generated 
-        
+
+  .PARAMETER WithoutAuth
+    Switch to specify that authentification and role-based authorization should not be used
+
   .PARAMETER Customlogging
     Optionnal
     Switch to use custom logging function
@@ -117,10 +120,11 @@ Param(
   [Parameter(ParameterSetName='Version',Mandatory=$true)][Switch]$Version,                                              # Get this script version
   [Parameter(ParameterSetName='Status',Mandatory=$false)][Switch]$Status,                                               # Get the current service status
   [Parameter(ParameterSetName='Setup',Mandatory=$true)][Switch]$Setup,                                                  # Install the service
-  [Parameter(ParameterSetName='Setup',Mandatory=$false)][string]$Protocol="https",                                      # Protocol the server will use
+  [Parameter(ParameterSetName='Setup',Mandatory=$false)][ValidateSet("http","https")][string]$Protocol="https",         # Protocol the server will use
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][string]$Ip="localhost",                                        # IP address the server will listen to
   [Parameter(ParameterSetName='Setup',Mandatory=$true)][string]$Port,                                                   # Port number the server will listen to
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][string]$CertHash,                                              # The thumbprint of the certificate to use
+  [Parameter(ParameterSetName='Setup',Mandatory=$false)][Switch]$WithoutAuth,                                           # Specify that authentification and role-based authorization should not be used  
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][Switch]$CustomLogging,                                         # Switch to use custom logging function
   [Parameter(ParameterSetName='Setup',Mandatory=$false)][System.Management.Automation.PSCredential]$Credential,         # Service account credential
   [Parameter(ParameterSetName='Setup',Mandatory=$false)]
@@ -138,7 +142,7 @@ Param(
 ### GLOBAL SETTINGS ###
 
 # This script name, with various levels of details
-$ScriptVersion = "1.3.0"
+$ScriptVersion = "1.4.0"
 $argv0 = Get-Item $MyInvocation.MyCommand.Definition
 $Script = $argv0.basename                                         # Ex: PowerXaaS
 $ScriptName = $argv0.name                                         # Ex: PowerXaaS.ps1
@@ -271,22 +275,37 @@ if ($Setup)            # Install the service
   New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings -Value "$protocol`://$ip`:$port/" -PropertyType String -Force | Out-Null
   New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name TokenLifetime -Value "4" -PropertyType String -ErrorAction SilentlyContinue | Out-Null    # value in hours
   New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name LogSize -Value "2" -PropertyType String -ErrorAction SilentlyContinue | Out-Null          # value in Mb
+  if ($WithoutAuth.IsPresent)
+  { New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name WithoutAuth -Value "True" -PropertyType String -Force | Out-Null }
+  else
+  { New-ItemProperty -Path HKLM:\Software\PowerXaaS -Name WithoutAuth -Value "False" -PropertyType String -Force | Out-Null }
   
   # Configure HTTP server
   Write-Output "Configuring HTTP server"
   $IpPort = "$ip`:$port"
-  $Url="$Protocol`://$IpPort/"
+  $Url = "$Protocol`://$IpPort/"
   Register-URLPrefix -Prefix $Url | Out-Null
   if (!(Get-URLPrefix | Where-Object {$_.url -eq $Url}))
   {
     Write-error "Failed to create the bindings"
     exit 1
   }
-  Register-SSLCertificate -IpPort $IpPort | Out-Null
-  if (!(Get-SSLCertificate | Where-Object {$_.IpPort -eq $IpPort}))
+  if ($Protocol -eq 'https')
   {
-    Write-error "Failed to associate the SSL certificate"
-    exit 1
+    Write-Output "Registering SSL certificate"
+    if ($CertHash)
+    {
+      Register-SSLCertificate -IpPort $IpPort -CertHash $CertHash | Out-Null
+    }
+    else
+    {
+      Register-SSLCertificate -IpPort $IpPort | Out-Null
+    }
+    if (!(Get-SSLCertificate | Where-Object {$_.IpPort -eq $IpPort}))
+    {
+      Write-error "Failed to associate the SSL certificate"
+      exit 1
+    }
   }
   
   # Register the service
@@ -335,7 +354,7 @@ if ($Remove)           # Uninstall the service
   if (Test-Path $InstallDir)
   {
     Write-Output "Deleting files"
-    Remove-Item $InstallDir -Recurse -ErrorAction silentlyContinue
+    Remove-Item $InstallDir -Recurse -Exclude *.log,*.conf -ErrorAction silentlyContinue
     Remove-Item "${ENV:ProgramFiles}\WindowsPowerShell\Modules\$Script" -Recurse -ErrorAction silentlyContinue
   }
   [Environment]::SetEnvironmentVariable("Path", $env:Path.replace(";$InstallDir",""), [EnvironmentVariableTarget]::Machine)

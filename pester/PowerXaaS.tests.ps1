@@ -20,8 +20,7 @@ add-type @"
 "@
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
-
-Describe "Validate PowerXaaS module" {
+Describe "Validate PowerXaaS" {
 
   Context "'Setup'" {
 
@@ -42,7 +41,7 @@ Describe "Validate PowerXaaS module" {
     It "Version" {
 
       $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Version
-      $result | should be "1.2.0"
+      $result | should be "1.4.0"
     }
 
     It "Start" {
@@ -67,7 +66,50 @@ Describe "Validate PowerXaaS module" {
       $result | should be "Not installed"
       & "$PSScriptRoot\..\PowerXaaS.ps1" -Setup -Ip $ip -Port $port -Start | Out-Null
       start-sleep 2
+      Import-Module PowerXaaS
     }
+  }
+  
+  Context "'Cmdlets'" {
+  
+    It "Get-PXFeature" {
+      (Get-PXFeature).count | should BeGreaterThan 0
+    }
+
+    It "Get-PXEndpoint" {
+      (Get-PXEndpoint).count | should BeGreaterThan 3
+    }
+
+    It "New-PXFeature" {
+      New-PXFeature -Name Pester -Active yes
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).name | should Be 'Pester'
+    }
+
+    It "Disable-PXFeature" {
+      Disable-PXFeature -Name Pester
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).active | should Be 'no'
+    }
+    
+    It "Enable-PXFeature" {
+      Enable-PXFeature -Name Pester
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).active | should Be 'yes'
+    }
+    
+    It "Set-PXEndpoint" {
+      Set-PXEndpoint -Feature Pester -Method GET -Url /temp
+      (Get-PXEndpoint -Feature Pester).url | should Be '/temp'
+    }
+
+    It "Remove-PXEndpoint" {
+      Remove-PXEndpoint -Feature Pester -Method GET -Url /temp
+      (Get-PXEndpoint -Feature Pester).url | should Be $null
+    }
+
+    It "Remove-PXFeature" {
+      Remove-PXFeature -Name Pester
+      (Get-PXFeature | where {$_.Name -eq 'Pester'}).name | should Be $null
+    }
+
   }
   
   Context "'Functionnal unitary testing'" {
@@ -96,6 +138,16 @@ Describe "Validate PowerXaaS module" {
     It "GET addition (parameters in URL)" {
 
       (invoke-webrequest -Uri "$BaseUrl/api/v1/addition/3+4" -Method GET -Headers $Headers).content | should be 7
+    }
+
+    It "GET stats" {
+
+      (invoke-webrequest -Uri "$BaseUrl/api/v1/stats" -Method GET -Headers $Headers).StatusCode | should be $([Int][System.Net.HttpStatusCode]::OK)
+    }
+
+    It "GET endpoints" {
+
+      (invoke-webrequest -Uri "$BaseUrl/api/v1/endpoints" -Method GET -Headers $Headers).StatusCode | should be $([Int][System.Net.HttpStatusCode]::OK)
     }
 
      
@@ -133,7 +185,7 @@ Describe "Validate PowerXaaS module" {
 
       try
       {
-        invoke-webrequest -Uri "$BaseUrl/api/v9/addition/3+4" -Method GET -Headers $Headers
+        invoke-webrequest -Uri "$BaseUrl/api/v9//endpoints" -Method GET -Headers $Headers
       }
       catch
       {
@@ -141,6 +193,20 @@ Describe "Validate PowerXaaS module" {
         $StatusMessage = $_.ErrorDetails.Message
       }
       $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::NotFound)
+    }
+    
+    It "unmanaged feature" {
+
+      try
+      {
+        invoke-webrequest -Uri "$BaseUrl/api/v9/addition/3+4" -Method GET -Headers $Headers
+      }
+      catch
+      {
+        $StatusCode = $_.Exception.Response.StatusCode.Value__
+        $StatusMessage = $_.ErrorDetails.Message
+      }
+      $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::InternalServerError)
     }
 
     It "malformatted JSON" {
@@ -172,7 +238,7 @@ Describe "Validate PowerXaaS module" {
       $StatusCode | Should be $([Int][System.Net.HttpStatusCode]::BadRequest)
     }
 
-    It "Invalid return code" {
+    It "invalid return code" {
 
       try
       {

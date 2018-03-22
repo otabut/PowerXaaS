@@ -2,35 +2,18 @@ param (
   [Parameter(Mandatory=$true)]$Inputs
 )
 
-$CredentialsList = @{"JohnDoe"="blabla";"WalterWhite"="CrystalMeth";"DexterMorgan"="SliceOfLife"}
-
-function MAA-ConvertTo-Base64([string]$data)
-{
-    $temp = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($data))
-    $temp = $temp -replace '=',''
-    
-    return $temp
-}
-function MAA-JWT-EncodeSignature([string]$data,[string]$secret)
-{
-    # Powershell HMAC SHA 256
-    $hmacsha = New-Object System.Security.Cryptography.HMACSHA256
-    $hmacsha.key = [Text.Encoding]::ASCII.GetBytes($secret)
-    $signature = $hmacsha.ComputeHash([Text.Encoding]::ASCII.GetBytes($data))
-    $signature = [Convert]::ToBase64String($signature)
-    $signature = $signature -replace '=',''
-
-    return $signature
-}
-
 $ErrorActionPreference = 'stop'
 try
 {
+  Import-Module PowerXaaS
+  . "${ENV:ProgramFiles}\PowerXaaS\Functions\JWT-helper.ps1"
+  
   switch -regex ($Inputs.url)
   {
     "/connect"
     {
-      if ($CredentialsList.$($Inputs.body.username) -eq $Inputs.body.password)  #Credentials validation
+      $CredentialsList = @{"JohnDoe"="blabla";"WalterWhite"="CrystalMeth";"DexterMorgan"="SliceOfLife"}   ### My accounts database
+      if ($CredentialsList.$($Inputs.body.username) -eq $Inputs.body.password)  ### Credentials validation
       {
         try
         {
@@ -71,6 +54,33 @@ try
       }
     }
 
+    "/version"
+    {
+      $result = [PSCustomObject]@{
+        ReturnCode = [Int][System.Net.HttpStatusCode]::OK
+        Content = "Version 1.0.0"
+        ContentType = "text/plain"
+      }
+    }
+
+    "/endpoints"
+    {
+      $result = [PSCustomObject]@{
+        ReturnCode = [Int][System.Net.HttpStatusCode]::OK
+        Content = Get-PXEndpoint | ConvertTo-Json
+        ContentType = "application/json"
+      }
+    }
+
+    "/stats"
+    {
+      $result = [PSCustomObject]@{
+        ReturnCode = [Int][System.Net.HttpStatusCode]::OK
+        Content = Get-PXUsageStats -raw | ConvertTo-Json
+        ContentType = "application/json"
+      }
+    }
+    
     default
     {
       $result = [PSCustomObject]@{
@@ -83,9 +93,11 @@ try
 }
 catch
 {
+  $msg = $_.Exception.Message
+  $line = $_.InvocationInfo.ScriptLineNumber
   $result = [PSCustomObject]@{
     ReturnCode = [Int][System.Net.HttpStatusCode]::InternalServerError
-    Content = "Error while processing"
+    Content = "Error while processing : error at line ${line}: $msg"
     ContentType = "text/plain"
   }
 }

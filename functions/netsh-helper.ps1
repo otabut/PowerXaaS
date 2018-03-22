@@ -20,39 +20,18 @@ function Get-SSLCertificate
 
   process
   {
-    $LastLine = $false
     $netsh_cmd = "netsh http show sslcert"
     $result = Invoke-Expression -Command $netsh_cmd
+    $result = $result.replace('IP:port','IP-port')
+    $result = $result | select -Last ($result.count-4) | where { $_ }
 
-    ForEach ($Line in $result)
+    For($i=0;$i -lt $result.count;$i+=14)
     {
-      if ($Line -match 'IP:port\s+\: (?<IpPort>.*)')
-      {
-        $IpPort = $matches.IpPort
-      }
-      elseif ($Line -match 'Certificate Hash\s+\: (?<CertHash>.*)')
-      {
-        $CertHash = $matches.CertHash
-      }
-      elseif ($Line -match 'Application ID\s+\: (?<AppId>.*)')
-      {
-        $AppId = $matches.AppId
-      }
-      elseif ($Line -match 'Certificate Store Name\s+\: (?<StoreName>.*)')
-      {
-        $StoreName = $matches.StoreName
-        $LastLine = $true
-      }
-                 
-      if ($LastLine)
-      {
-        [PSCustomObject]@{
-          'IpPort' = $IpPort.Trim()
-          'CertHash' = $CertHash.Trim()
-          'AppId' = $AppId.Trim()
-          'StoreName' = $StoreName.Trim()
-        }
-        $LastLine = $false
+      [PSCustomObject]@{
+        'IpPort' = $result[$i].split(':',2)[1].trim()
+        'CertHash' = $result[$i+1].split(':',2)[1].trim()
+        'AppId' = $result[$i+2].split(':',2)[1].trim()
+        'StoreName' = $result[$i+3].split(':',3)[2].trim()
       }
     }
   }
@@ -108,7 +87,7 @@ function Register-SSLCertificate
     if (Get-ChildItem -path cert:\LocalMachine -recurse | where {$_.Thumbprint -eq $CertHash})
     {
       #Add-NetIPHttpsCertBinding -IpPort $IpPort -CertificateHash $Certhash -CertificateStoreName "My" -ApplicationId "{$guid}" -NullEncryption $false
-      $netsh_cmd = 'netsh http add sslcert ipport="$IpPort" certhash="$CertHash" appid="{$guid}" certstorename="My"'
+      $netsh_cmd = "netsh http add sslcert ipport=""$IpPort"" certhash=""$CertHash"" appid=""{$guid}"" certstorename=""My"""
       Write-Verbose "Registering SSL certificate using $netsh_cmd"
       $result = Invoke-Expression -Command "$netsh_cmd"
     }
@@ -156,7 +135,7 @@ function Unregister-SSLCertificate
 
   process
   {
-    $netsh_cmd = 'netsh http delete sslcert ipport="$IpPort"'
+    $netsh_cmd = "netsh http delete sslcert ipport=""$IpPort"""
     Write-Verbose "Unregistering SSL certificate using $netsh_cmd"
     $result = Invoke-Expression -Command "$netsh_cmd"
     $result -match 'SSL certificate successfully deleted'
@@ -195,17 +174,16 @@ function Get-URLPrefix
     $info = @()
     ForEach ($Line in $result)
     {
-      if ($Line -match 'Reserved URL\s+\: (?<url>.*)')
+      if ($Line -match 'URL.*\: (?<url>.*)')
       {
         $url = $matches.url
       }
-      elseif ($Line -match 'User\: (?<user>.*)')
+      elseif ($Line -match 'SDDL\s+: (?<sddl>.*)')
       {
-        $user = $matches.user
-
+        $SDDL = $matches.sddl
         $info += [PSCustomObject]@{
           'URL' = $url.Trim()
-          'User' = $user.Trim()
+          'SDDL' = $SDDL.Trim()
         }
       }
     }
@@ -246,7 +224,7 @@ function Register-URLPrefix
 
   param(
     [Parameter(Mandatory=$true)][String]$Prefix,
-    [Parameter(Mandatory=$false)][String]$User="Everyone"
+    [Parameter(Mandatory=$false)][String]$User
   )
 
   begin
@@ -260,7 +238,14 @@ function Register-URLPrefix
 
   process
   {
-    $netsh_cmd = "netsh http add urlacl url=$Prefix user=$User"
+    if ($User)
+    {
+      $netsh_cmd = "netsh http add urlacl url=$Prefix user=$User"
+    }
+    else
+    {
+      $netsh_cmd = "netsh http add urlacl url=$Prefix sddl='D:(A;;GA;;;WD)'"
+    }
     Write-Verbose "Registering URL prefix using $netsh_cmd"
     $result = Invoke-Expression -Command $netsh_cmd
     $result -match 'URL reservation successfully added'

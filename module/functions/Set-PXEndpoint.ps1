@@ -22,11 +22,23 @@ Function Set-PXEndpoint
       $Feature = [PSCustomObject]@{
         name = $Feature
         active = 'no'
-        endpoints = @()
+        endpoints = @($Endpoint)
       }
       $Config.features += $Feature
     }
-    ($Config.features | where {$_.Name -eq $Feature}).endpoints += $Endpoint
+    else
+    {
+      $OtherEndpoints = ($Config.features | where {$_.Name -eq $Feature}).endpoints | where {($_.url -ne $Url) -or ($_.method -ne $Method)}
+      if ($OtherEndpoints)
+      {
+        $AllEndpoints = @($OtherEndpoints,$Endpoint)
+      }
+      else
+      {
+        $AllEndpoints = @($Endpoint)
+      }
+      ($Config.features | where {$_.Name -eq $Feature}).endpoints = $AllEndpoints
+    }
     $Config | ConvertTo-Json -Depth 5 | Set-Content $ConfigurationFile
   }
   catch

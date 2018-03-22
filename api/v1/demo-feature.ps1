@@ -7,15 +7,6 @@ try
 {
   switch -regex ($inputs.url)
   {
-    "/version"
-    {
-      $result = [PSCustomObject]@{
-        ReturnCode = [Int][System.Net.HttpStatusCode]::OK
-        Content = "Version 1.0.0"
-        ContentType = "text/plain"
-      }
-    }
-
     "/echo"
     {
       if ([string]::IsNullOrEmpty($inputs.Body) -or [string]::IsNullOrEmpty($inputs.Body.text))
@@ -79,9 +70,11 @@ try
 }
 catch
 {
+  $msg = $_.Exception.Message
+  $line = $_.InvocationInfo.ScriptLineNumber
   $result = [PSCustomObject]@{
     ReturnCode = [Int][System.Net.HttpStatusCode]::InternalServerError
-    Content = "Error while processing"
+    Content = "Error while processing : error at line ${line}: $msg"
     ContentType = "text/plain"
   }
 }

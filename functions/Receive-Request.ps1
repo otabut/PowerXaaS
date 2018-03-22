@@ -67,7 +67,7 @@ Function Receive-Request
       #Check authorization
       if ($Request.headers.GetValues("Authorization") -eq $null)
       {
-        if ($Endpoint -eq '/connect')
+        if (($Endpoint -eq '/connect') -or ((Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name WithoutAuth).WithoutAuth -eq 'True'))
         {
           $Authorized = "Granted"
         }
@@ -91,8 +91,8 @@ Function Receive-Request
           $Script = "$Folder\$Feature.ps1"
           $Parameters.PSObject.Properties.Remove('0')
           $Inputs = [PSCustomObject]@{
-            URL = $($Request.url.localpath.substring(1) -replace 'api/v\d*','')
-            Method = $($Request.httpmethod)
+            URL = $Endpoint
+            Method = $Method
             Body = $Body
             Parameters = $Parameters
           }
@@ -181,6 +181,11 @@ Function Receive-Request
   }
   Write-Log -Status "Information" -Context "Process $RequestId" -Description "Request processed"
 
+  ### WRITE STATS ###
+  $timestamp = Get-Date -format "yyyyMMdd-HHmmss"
+  $stat = "$timestamp;$Method;$Endpoint;$($Result.ReturnCode)"
+  Add-Content "${ENV:ProgramFiles}\PowerXaaS\data.log" $stat
+  
   ### SEND RESPONSE ###    
   Write-Log -Status "Information" -Context "Process $RequestId" -Description "Return code is $($Result.ReturnCode)"
   $Response.StatusCode = $Result.ReturnCode

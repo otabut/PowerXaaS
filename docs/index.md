@@ -13,4 +13,5 @@ PowerXaaS will allow you to :
   - manage authentication and rights
   - manage several versions of your API
   - handle HTTP standard errors
+  - check how your APIs are used
   - and much more...

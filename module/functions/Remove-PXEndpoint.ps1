@@ -9,6 +9,12 @@ Function Remove-PXEndpoint
   $ErrorActionPreference = "stop"
   try
   {
+    If ($Feature -eq 'builtin')
+    {
+      Write-Warning "Endpoints from builtin feature can't be removed"
+      return
+    }
+
     $ConfigurationFile = "${ENV:ProgramFiles}\PowerXaaS\PowerXaaS.conf"
     $Config = Get-Content $ConfigurationFile | ConvertFrom-Json
     If ($Config.features | where {$_.Name -eq $Feature})
@@ -16,7 +22,16 @@ Function Remove-PXEndpoint
       $Endpoint = ($Config.features | where {$_.Name -eq $Feature}).endpoints | where {($_.url -eq $Url) -and ($_.method -eq $Method)}
       If ($Endpoint)
       {
-        ($Config.features | where {$_.Name -eq $Feature}).endpoints = ($Config.features | where {$_.Name -eq $Feature}).endpoints | where {($_.url -ne $Url) -and ($_.method -ne $Method)}
+        $OtherEndpoints = ($Config.features | where {$_.Name -eq $Feature}).endpoints | where {($_.url -ne $Url) -or ($_.method -ne $Method)}
+        if ($OtherEndpoints)
+        {
+          $AllEndpoints = @($OtherEndpoints)
+        }
+        else
+        {
+          $AllEndpoints = @()
+        }
+        ($Config.features | where {$_.Name -eq $Feature}).endpoints = $AllEndpoints
         $Config | ConvertTo-Json -Depth 5 | Set-Content $ConfigurationFile
       }
       else
