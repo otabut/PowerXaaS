@@ -10,7 +10,7 @@
 
   .NOTES
     Author: Olivier TABUT
-    1.4.0 release (31/03/2018)
+    1.5.0 release (08/04/2018)
 
   .PARAMETER Version
     Display this script version and exit
@@ -142,7 +142,7 @@ Param(
 ### GLOBAL SETTINGS ###
 
 # This script name, with various levels of details
-$ScriptVersion = "1.4.0"
+$ScriptVersion = "1.5.0"
 $argv0 = Get-Item $MyInvocation.MyCommand.Definition
 $Script = $argv0.basename                                         # Ex: PowerXaaS
 $ScriptName = $argv0.name                                         # Ex: PowerXaaS.ps1
