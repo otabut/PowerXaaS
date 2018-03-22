@@ -244,7 +244,7 @@ function Register-URLPrefix
     }
     else
     {
-      $netsh_cmd = "netsh http add urlacl url=$Prefix sddl=D:(A;;GA;;;WD)"
+      $netsh_cmd = "netsh http add urlacl url=$Prefix sddl='D:(A;;GA;;;WD)'"
     }
     Write-Verbose "Registering URL prefix using $netsh_cmd"
     $result = Invoke-Expression -Command $netsh_cmd
