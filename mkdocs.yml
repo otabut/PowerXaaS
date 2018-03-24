@@ -10,5 +10,6 @@ pages:
   - Setup: setup.md
   - Features and Endpoints: features-and-endpoints.md
   - Custom features scripts: custom-features-scripts.md
+  - Users, roles and rights: users-roles-and-rights.md
   - Authentication with JSON web tokens: json-web-tokens.md
   - Credits: credits.md
