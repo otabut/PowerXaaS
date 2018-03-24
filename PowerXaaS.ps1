@@ -207,7 +207,7 @@ if ($Setup)            # Install the service
     # Check if this script is newer than the installed copy.
     if (((Get-Item $ScriptCopy -ErrorAction SilentlyContinue).LastWriteTime -lt (Get-Item $ScriptFullName -ErrorAction SilentlyContinue).LastWriteTime) -or ((Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings).Bindings) -notmatch $ip)
     {
-      Write-Output "Service $ServiceName is already Installed, but requires upgrade"
+      Write-Output "Service $ServiceName is already Installed, but requires upgrade or reconfiguration"
       & $ScriptFullName -Remove
       throw "continue"
     }
@@ -238,16 +238,16 @@ if ($Setup)            # Install the service
     if ($ScriptFullName -ne $ScriptCopy)
     {
       Write-Output "Copying files"
-      Copy-Item -Path $PSScriptRoot\PowerXaaS.* -Destination $InstallDir
-      Copy-Item -Path $PSScriptRoot\functions -Recurse -Destination $InstallDir -Container
-      Copy-Item -Path $PSScriptRoot\api -Recurse -Destination $InstallDir -Container
+      Copy-Item -Path $PSScriptRoot\PowerXaaS.* -Destination $InstallDir -Force
+      Copy-Item -Path $PSScriptRoot\functions -Recurse -Destination $InstallDir -Container -Force
+      Copy-Item -Path $PSScriptRoot\api -Recurse -Destination $InstallDir -Container -Force
       Write-Output "Copying Powershell module"
       if (!(Test-Path "${ENV:ProgramFiles}\WindowsPowerShell\Modules\$Script"))
       {
         New-Item -ItemType directory -Path "${ENV:ProgramFiles}\WindowsPowerShell\Modules\$Script" -ErrorAction stop | Out-Null
       }
-      Copy-Item -Path $PSScriptRoot\module\*.* -Destination "${ENV:ProgramFiles}\WindowsPowerShell\Modules\$Script"
-      Copy-Item -Path $PSScriptRoot\module\functions -Recurse -Destination "${ENV:ProgramFiles}\WindowsPowerShell\Modules\$Script" -Container
+      Copy-Item -Path $PSScriptRoot\module\*.* -Destination "${ENV:ProgramFiles}\WindowsPowerShell\Modules\$Script" -Force
+      Copy-Item -Path $PSScriptRoot\module\functions -Recurse -Destination "${ENV:ProgramFiles}\WindowsPowerShell\Modules\$Script" -Container -Force
     }
   }
   catch
