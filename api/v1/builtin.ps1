@@ -12,7 +12,7 @@ try
   {
     "/connect"
     {
-      if (Test-Authentication -User $Inputs.body.username -Password $Inputs.body.password)  ### Credentials validation
+      if (Test-PXAuthentication -User $Inputs.body.username -Password $Inputs.body.password)  ### Credentials validation
       {
         try
         {
