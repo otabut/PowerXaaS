@@ -16,16 +16,16 @@ Function Test-PXAuthorization
       return $false
     }
 
-    if (!(Get-PXUsers | where {$_.Name -eq $User}))
+    if (!(Get-PXUser | where {$_.Name -eq $User}))
     {
       Write-Warning "User $User doesn't exist"
       return $false
     }
 
     $Found = $false
-    ForEach ($Role in (Get-PXRights -User $User).role)
+    ForEach ($Role in (Get-PXRight -User $User).role)
     {
-      $Features = (Get-PXRoles | where {$_.name -eq $Role}).features
+      $Features = (Get-PXRole | where {$_.name -eq $Role}).features
       if (($Features | where {$_ -eq $Feature}) -or ($Features -eq '*'))
       {
         $Found = $true
