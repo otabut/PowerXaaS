@@ -12,8 +12,7 @@ try
   {
     "/connect"
     {
-      $CredentialsList = @{"JohnDoe"="blabla";"WalterWhite"="CrystalMeth";"DexterMorgan"="SliceOfLife"}   ### My accounts database
-      if ($CredentialsList.$($Inputs.body.username) -eq $Inputs.body.password)  ### Credentials validation
+      if (Test-Authentication -User $Inputs.body.username -Password $Inputs.body.password)  ### Credentials validation
       {
         try
         {
