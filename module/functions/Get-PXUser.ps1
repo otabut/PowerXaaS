@@ -1,4 +1,4 @@
-Function Get-PXUsers
+Function Get-PXUser
 {
   $ErrorActionPreference = "stop"
   try
