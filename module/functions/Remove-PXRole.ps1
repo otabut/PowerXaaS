@@ -7,8 +7,6 @@ Function Remove-PXRole
   $ErrorActionPreference = "stop"
   try
   {
-    Import-Module PowerXaaS
-
     $ConfigurationFile = "${ENV:ProgramFiles}\PowerXaaS\PowerXaaS.conf"
     $Config = Get-Content $ConfigurationFile | ConvertFrom-Json
     if ($Config.roles | where {$_.Name -eq $Role})
