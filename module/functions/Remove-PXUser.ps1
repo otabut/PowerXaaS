@@ -9,10 +9,10 @@ Function Remove-PXUser
   {
     Import-Module PowerXaaS
     
-    if (Get-PXUsers | where {$_.Name -eq $User})
+    if (Get-PXUser | where {$_.Name -eq $User})
     {
       #First, revoke rights
-      Get-PXRights -User $User | %{Revoke-PXRight -Role $_.role -User $User}
+      Get-PXRight -User $User | %{Revoke-PXRight -Role $_.role -User $User}
       #Then, delete user
       $ConfigurationFile = "${ENV:ProgramFiles}\PowerXaaS\PowerXaaS.conf"
       $Config = Get-Content $ConfigurationFile | ConvertFrom-Json
