@@ -81,9 +81,10 @@ Function Receive-Request
         $Token = $Request.headers.GetValues("Authorization").split(' ')[1]
         $Checkpoint = Request-Authorization -Token $Token -Feature $Feature -Endpoint $Endpoint -Method $Method
         $Username = $Checkpoint.Username
+        $Authorized = $Checkpoint.Authorization
       }
 
-      switch ($Checkpoint.Authorization)
+      switch ($Authorized)
       {
         "Granted"
         {
