@@ -356,7 +356,8 @@ Describe "Validate PowerXaaS" {
         $Result = (invoke-webrequest -Uri "$BaseUrl/api/v1/connect" -Method POST -Body $json).content | ConvertFrom-Json
         $Token = $Result.token
         $Headers = @{"Authorization" = "Bearer " + $Token}
-        invoke-webrequest -Uri "$BaseUrl/api/v1/version" -Method GET -Headers $Headers
+        $json='{"text":"My own text"}'
+        invoke-webrequest -Uri "$BaseUrl/api/v1/echo" -Method POST -Headers $Headers -Body $json
       }
       catch
       {
