@@ -113,7 +113,55 @@ Describe "Validate PowerXaaS" {
   }
   
   Context "'Users, Roles and Rights management Cmdlets'" {
-  
+
+    It "New-PXUser" {
+      New-PXUser -User PesterUser -Password UnitTesting
+      (Get-PXUsers | where {$_.Name -eq 'PesterUser'}).name | should Be 'PesterUser'
+    }
+
+    It "New-PXRole" {
+      New-PXRole -Role PesterRole -Features *
+      (Get-PXRoles | where {$_.Name -eq 'PesterRole'}).features | should Be '*'
+    }
+
+    It "Grant-PXRight" {
+      Grant-PXRight -Role PesterRole -User PesterUser
+      (Get-PXRights -User PesterUser | where {$_.Role -eq 'PesterRole'}).role | should Be 'PesterRole'
+    }
+
+    It "Test-PXAuthentication" {
+      Test-PXAuthentication -User PesterUser -Password UnitTesting | should Be $true
+    }
+
+    It "Test-PXAuthorization" {
+      Test-PXAuthorization -User PesterUser -Feature builtin | should Be $true
+    }
+
+    It "Update-PXUser" {
+      Update-PXUser -User PesterUser -Password unittesting
+      Test-PXAuthentication -User PesterUser -Password UnitTesting | should Be $false
+    }
+
+    It "Update-PXRole" {
+      Update-PXRole -Role PesterRole -Features builtin
+      (Get-PXRoles | where {$_.Name -eq 'PesterRole'}).features | should Be 'builtin'
+    }
+
+    It "Revoke-PXRight" {
+      Revoke-PXRight -Role PesterRole -User PesterUser
+      (Get-PXRights -User PesterUser | where {$_.Role -eq 'PesterRole'}).role | should Be $null
+      Test-PXAuthorization -User PesterUser -Feature Builtin | should Be $false
+    }
+
+    It "Remove-PXRole" {
+      Remove-PXRole -Role PesterRole
+      (Get-PXRoles | where {$_.Name -eq 'PesterRole'}).name | should Be $null
+    }
+
+    It "Remove-PXUser" {
+      Remove-PXUser -User PesterUser
+      (Get-PXUsers | where {$_.Name -eq 'PesterUser'}).name | should Be $null
+    }
   }
   
   Context "'Functionnal unitary testing'" {
