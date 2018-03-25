@@ -41,7 +41,7 @@ Describe "Validate PowerXaaS" {
     It "Version" {
 
       $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Version
-      $result | should be "1.4.0"
+      $result | should be "1.5.0"
     }
 
     It "Start" {
