@@ -17,20 +17,32 @@ Function Request-Authorization
       #do something with $Claims.username, $Feature, $Endpoint, $Method
       if ($Claims.username -eq 'JohnDoe')
       {
-        return "Granted"
+        return [PSCustomObject]@{
+          Username = $Claims.username
+          Authorization = "Granted"
+        }
       }
       else
       {
-        return "Denied"
+        return [PSCustomObject]@{
+          Username = $Claims.username
+          Authorization = "Denied"
+        }
       }
     }
     else
     {
-      return "Expired"
+      return [PSCustomObject]@{
+        Username = $Claims.username
+        Authorization = "Expired"
+      }
     }
   }
   catch
   {
-    return "NotAuthenticated"
+    return [PSCustomObject]@{
+      Username = $Claims.username
+      Authorization = "NotAuthenticated"
+    }
   }
 }
