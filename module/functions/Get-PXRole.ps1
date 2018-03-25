@@ -1,4 +1,4 @@
-Function Get-PXRoles
+Function Get-PXRole
 {
   $ErrorActionPreference = "stop"
   try
