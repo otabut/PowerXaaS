@@ -8,7 +8,7 @@ Function Get-PXUsageStats
     [parameter(Mandatory=$false)][switch]$Count
   )
 
-  $Data = Get-Content "${ENV:ProgramFiles}\PowerXaaS\data.log" | ConvertFrom-Csv -Delimiter ';' -Header timestamp,method,url,returncode 
+  $Data = Get-Content "${ENV:ProgramFiles}\PowerXaaS\data.log" | ConvertFrom-Csv -Delimiter ';' -Header timestamp,username,method,url,returncode 
   if ($StartTimestamp)
   {
     $Data = $Data | Where {$_.timestamp -ge $StartTimestamp}

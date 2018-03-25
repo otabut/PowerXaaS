@@ -3,7 +3,7 @@
 
 A feature is a set of actions that will be performed by a dedicated script (and sub-scripts if needed or wanted) and exposed through one or more endpoints.
 
-Let's say, features are a logical group of endpoints and you can have as many features as you want.
+Let's say, features are a logical group of endpoints and you can have as many features as you want. Rights on features will be granted to users through roles.
 
 
 ### What is an endpoint

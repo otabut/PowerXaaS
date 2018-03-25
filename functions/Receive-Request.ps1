@@ -79,7 +79,9 @@ Function Receive-Request
       else
       {
         $Token = $Request.headers.GetValues("Authorization").split(' ')[1]
-        $Authorized = Request-Authorization -Token $Token -Feature $Feature -Endpoint $Endpoint -Method $Method
+        $Checkpoint = Request-Authorization -Token $Token -Feature $Feature -Endpoint $Endpoint -Method $Method
+        $Username = $Checkpoint.Username
+        $Authorized = $Checkpoint.Authorization
       }
 
       switch ($Authorized)
@@ -183,7 +185,7 @@ Function Receive-Request
 
   ### WRITE STATS ###
   $timestamp = Get-Date -format "yyyyMMdd-HHmmss"
-  $stat = "$timestamp;$Method;$Endpoint;$($Result.ReturnCode)"
+  $stat = "$timestamp;$Username;$Method;$Endpoint;$($Result.ReturnCode)"
   Add-Content "${ENV:ProgramFiles}\PowerXaaS\data.log" $stat
   
   ### SEND RESPONSE ###    

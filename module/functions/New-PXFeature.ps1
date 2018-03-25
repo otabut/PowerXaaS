@@ -18,12 +18,12 @@ Function New-PXFeature
     }
     else
     {
-      $Feature = [PSCustomObject]@{
+      $FeatureObject = [PSCustomObject]@{
         name = $Name
         active = $Active
         endpoints = @()
       }
-      $Config.features += $Feature
+      $Config.features += $FeatureObject
       $Config | ConvertTo-Json -Depth 5 | Set-Content $ConfigurationFile
 
       if ($CreateFile)

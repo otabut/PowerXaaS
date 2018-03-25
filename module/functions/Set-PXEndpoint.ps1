@@ -12,30 +12,37 @@ Function Set-PXEndpoint
     $ConfigurationFile = "${ENV:ProgramFiles}\PowerXaaS\PowerXaaS.conf"
     $Config = Get-Content $ConfigurationFile | ConvertFrom-Json
     
-    $Endpoint = [PSCustomObject]@{
+    $EndpointObject = [PSCustomObject]@{
       method = $Method
       url = $Url
     }
 
     if (!($Config.features | where {$_.Name -eq $Feature}))
     {
-      $Feature = [PSCustomObject]@{
+      $FeatureObject = [PSCustomObject]@{
         name = $Feature
         active = 'no'
-        endpoints = @($Endpoint)
+        endpoints = @($EndpointObject)
       }
-      $Config.features += $Feature
+      $Config.features += $FeatureObject
     }
     else
     {
       $OtherEndpoints = ($Config.features | where {$_.Name -eq $Feature}).endpoints | where {($_.url -ne $Url) -or ($_.method -ne $Method)}
       if ($OtherEndpoints)
       {
-        $AllEndpoints = @($OtherEndpoints,$Endpoint)
+        if ($OtherEndpoints.count -gt 1)
+        {
+          $AllEndpoints = $OtherEndpoints + $EndpointObject
+        }
+        else
+        {
+          $AllEndpoints = @($OtherEndpoints,$EndpointObject)
+        }
       }
       else
       {
-        $AllEndpoints = @($Endpoint)
+        $AllEndpoints = @($EndpointObject)
       }
       ($Config.features | where {$_.Name -eq $Feature}).endpoints = $AllEndpoints
     }
