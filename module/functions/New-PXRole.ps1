@@ -21,7 +21,7 @@ Function New-PXRole
         $List = @()
         ForEach ($Feature in $Features.split(','))
         {
-         if ((Get-PXFeature).Name -match $Feature)
+         if (Get-PXFeature | where {$_.Name -eq $Feature})
          {
            $List += $Feature
          }
@@ -65,4 +65,3 @@ Function New-PXRole
     Write-Error "Error on line $ErrorLine. The error message was: $ErrorMessage"
   }
 }
-
