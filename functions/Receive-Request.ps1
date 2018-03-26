@@ -79,7 +79,7 @@ Function Receive-Request
       else
       {
         $Token = $Request.headers.GetValues("Authorization").split(' ')[1]
-        $Checkpoint = Request-Authorization -Token $Token -Feature $Feature -Endpoint $Endpoint -Method $Method
+        $Checkpoint = Request-Authorization -Token $Token -Feature $Feature
         $Username = $Checkpoint.Username
         $Authorized = $Checkpoint.Authorization
       }
