@@ -2,9 +2,7 @@ Function Request-Authorization
 {
   param (
     [Parameter(Mandatory=$true)]$Token,
-    [Parameter(Mandatory=$true)]$Feature,
-    [Parameter(Mandatory=$true)]$Endpoint,
-    [Parameter(Mandatory=$true)]$Method
+    [Parameter(Mandatory=$true)]$Feature
   )
 
   try
