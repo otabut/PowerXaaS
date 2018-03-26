@@ -31,7 +31,7 @@ function Get-SSLCertificate
         'IpPort' = $result[$i].split(':',2)[1].trim()
         'CertHash' = $result[$i+1].split(':',2)[1].trim()
         'AppId' = $result[$i+2].split(':',2)[1].trim()
-        'StoreName' = $result[$i+3].split(':',3)[2].trim()
+        'StoreName' = if (($Result[$i+3].ToCharArray() | Where-Object {$_ -eq ':'}).Count -eq 1) { $result[$i+3].split(':',2)[1].trim() } else { $result[$i+3].split(':',3)[2].trim() }
       }
     }
   }
@@ -178,7 +178,7 @@ function Get-URLPrefix
       {
         $url = $matches.url
       }
-      elseif ($Line -match 'SDDL\s+: (?<sddl>.*)')
+      elseif ($Line -match 'SDDL\s*: (?<sddl>.*)')
       {
         $SDDL = $matches.sddl
         $info += [PSCustomObject]@{
