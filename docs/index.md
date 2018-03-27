@@ -12,6 +12,7 @@ PowerXaaS will allow you to :
   - add, disable (feature-flag) or remove features/endpoints dynamically with no downtime
   - manage authentication and rights
   - manage several versions of your API
+  - validate JSON body based on predefined JSON schema
   - handle HTTP standard errors
   - check how your APIs are used
   - and much more...
