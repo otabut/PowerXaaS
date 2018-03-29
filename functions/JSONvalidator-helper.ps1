@@ -31,10 +31,9 @@ Function Test-JSON
   $Token = [Newtonsoft.Json.Linq.JToken]::Parse($JSON)
   $Schema = [Newtonsoft.Json.Schema.JSchema]::Parse($Schema)
   $ErrorMessages = [Validator]::Validate($Token,$Schema)
-  $IsValid = $ErrorMessages.Count -eq 0
 
   $Result = [PSCustomObject]@{
-    IsValid = $IsValid
+    IsValid = $ErrorMessages.Count -eq 0
     ErrorCount = $ErrorMessages.Count
     ErrorMessages = $ErrorMessages
   }
