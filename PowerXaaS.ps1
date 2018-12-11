@@ -345,10 +345,13 @@ if ($Remove)           # Uninstall the service
   
   # Unconfigure HTTP server
   Write-Output "Unconfiguring HTTP server"
-  $Bindings = (Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings).Bindings
-  $IpPort = $Bindings.split('/')[2]
-  Unregister-URLPrefix -Prefix $Bindings | Out-Null
-  Unregister-SSLCertificate -IpPort $IpPort | Out-Null
+  $Bindings = (Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings -ErrorAction SilentlyContinue).Bindings
+  if ($Bindings)
+  {
+    $IpPort = $Bindings.split('/')[2]
+    Unregister-URLPrefix -Prefix $Bindings | Out-Null
+    Unregister-SSLCertificate -IpPort $IpPort | Out-Null
+  }
 
   # Remove the installed files
   if (Test-Path $InstallDir)
