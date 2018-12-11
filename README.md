@@ -14,6 +14,7 @@ PowerXaaS will allow you to :
   - add, disable (feature-flag) or remove features/endpoints dynamically with no downtime
   - manage authentication and rights
   - manage several versions of your API
+  - validate JSON body based on predefined JSON schema
   - handle HTTP standard errors
   - check how your APIs are used
   - and much more...
@@ -24,4 +25,3 @@ PowerXaaS will allow you to :
 ### [Features and Endpoints](https://github.com/otabut/PowerXaaS/blob/master/docs/features-and-endpoints.md)
 ### [Custom features scripts](https://github.com/otabut/PowerXaaS/blob/master/docs/custom-features-scripts.md)
 ### [Authentication with JSON web tokens](https://github.com/otabut/PowerXaaS/blob/master/docs/json-web-tokens.md)
-
