@@ -452,12 +452,16 @@ if ($Status)           # Get the current service status
   if (($pss.Status -eq "Running") -and (!$spid))  # This happened during the debugging phase
   {
     Write-Host "The Service Control Manager thinks $ServiceName is started, but $ServiceName.ps1 -Service is not running." -ForegroundColor Red
-    exit 1
+    return "Inconsistent"
   }
   if (($pss.Status -eq "Stopped") -and ($spid))   # This happened during the debugging phase
   {
     Write-Host "The Service Control Manager thinks $ServiceName is stopped, but $ServiceName.ps1 -Service is running." -ForegroundColor Red
-    exit 1
+    $processes = @(Get-WmiObject Win32_Process -filter "Name = 'powershell.exe'" | Where-Object { $_.CommandLine -match ".*$ScriptCopyCname.*-Service" })
+    foreach ($process in $processes)
+    {
+      taskkill /PID $process.ProcessId /F
+    }
   }
   return "$($pss.Status)$spid"
 }
