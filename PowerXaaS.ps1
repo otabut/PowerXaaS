@@ -340,7 +340,7 @@ if ($Remove)           # Uninstall the service
     $processes = @(Get-WmiObject Win32_Process -filter "Name = 'powershell.exe'" | Where-Object { $_.CommandLine -match ".*$ScriptCopyCname.*-Service" })
     foreach ($process in $processes)
     {
-      taskkill /PID $process.ProcessId /F
+      taskkill /PID $process.ProcessId /F | out-null
     }
   }
   catch
@@ -460,7 +460,7 @@ if ($Status)           # Get the current service status
     $processes = @(Get-WmiObject Win32_Process -filter "Name = 'powershell.exe'" | Where-Object { $_.CommandLine -match ".*$ScriptCopyCname.*-Service" })
     foreach ($process in $processes)
     {
-      taskkill /PID $process.ProcessId /F
+      taskkill /PID $process.ProcessId /F | out-null
     }
   }
   return "$($pss.Status)$spid"
