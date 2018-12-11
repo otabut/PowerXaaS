@@ -337,6 +337,11 @@ if ($Remove)           # Uninstall the service
       Write-Error "Failed to remove the service ${ServiceName}: $msg"
       exit 1
     }
+    $processes = @(Get-WmiObject Win32_Process -filter "Name = 'powershell.exe'" | Where-Object { $_.CommandLine -match ".*$ScriptCopyCname.*-Service" })
+    foreach ($process in $processes)
+    {
+      taskkill /PID $process.ProcessId /F
+    }
   }
   catch
   {
