@@ -205,7 +205,7 @@ if ($Setup)            # Install the service
   {
     $pss = Get-Service $ServiceName -ErrorAction stop # Will error-out if not installed
     # Check if this script is newer than the installed copy.
-    if (((Get-Item $ScriptCopy -ErrorAction SilentlyContinue).LastWriteTime -lt (Get-Item $ScriptFullName -ErrorAction SilentlyContinue).LastWriteTime) -or ((Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings).Bindings) -notmatch $ip)
+    if (((Get-Item $ScriptCopy -ErrorAction SilentlyContinue).LastWriteTime -lt (Get-Item $ScriptFullName -ErrorAction SilentlyContinue).LastWriteTime) -or ((Get-ItemProperty -Path HKLM:\Software\PowerXaaS -Name Bindings -ErrorAction silentlyContinue).Bindings) -notmatch $ip)
     {
       Write-Output "Service $ServiceName is already Installed, but requires upgrade or reconfiguration"
       & $ScriptFullName -Remove
