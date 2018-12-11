@@ -35,7 +35,7 @@ Describe "Validate PowerXaaS" {
 
       & "$PSScriptRoot\..\PowerXaaS.ps1" -Setup -Ip $ip -Port $port -Protocol $protocol | Out-Null
       $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Status
-      $result | should be "Stopped"
+      $result | should match "Stopped"
     }
 
     It "Version" {
@@ -56,7 +56,7 @@ Describe "Validate PowerXaaS" {
       & "$PSScriptRoot\..\PowerXaaS.ps1" -Stop | Out-Null
       start-sleep 1
       $result = & "$PSScriptRoot\..\PowerXaaS.ps1" -Status
-      $result | should be "Stopped"
+      $result | should match "Stopped"
     }
 
     It "Remove" {
